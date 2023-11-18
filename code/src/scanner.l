@@ -12,9 +12,9 @@
 
 \n 								{printf("New line\n");}
 (\*\*\*.+\*\*\*)|(___.+___)		{printf("`%s` is a bold italic text\n", yytext);}
-^"* ".+							{printf("`%s` is a list element\n", yytext);}
-^"- ".+							{printf("`%s` is a list element\n", yytext);}
-^[1-9][0-9]*". ".+				{printf("`%s` is an ordered list element\n", yytext); listIndex++;}
+^[ \t]*"* ".+					{printf("`%s` is a list element\n", yytext);}
+^[ \t]*"- ".+					{printf("`%s` is a list element\n", yytext);}
+^[ \t]*[1-9][0-9]*". ".+		{printf("`%s` is an ordered list element\n", yytext); listIndex++;}
 (\<.+\>)|(\[.+\]\(.+\))			{printf("`%s` is a link\n", yytext);}
 \\[\!`_*{}()<>[\]#+-.|]{1,5}	{printf("`%s` is an escape sequence\n", yytext);}
 %%
