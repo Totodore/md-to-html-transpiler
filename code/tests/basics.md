@@ -1,7 +1,7 @@
 azidybaziu
 # It's a header !
 ## It's a subheader !
-Test ! **test**
+Test ! **te*st**
 
 ## Test **azidaznodinado**
 
@@ -55,3 +55,16 @@ I am a second paragraph.
 **Some other bold text**
 asasassa
 ---
+***
+---
+______
+![a](http://a.com)
+` code aksmalks `
+``` akjsajkndasj
+aaknsjkas
+ajksnakjnds ```
+> ajksnajskdn
+> > aksm
+> kamak
+>
+> mlkqwemqklw
