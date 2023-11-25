@@ -3,10 +3,11 @@
 	int count = 0;
 %}
 
-COLOR (([a-z]+)|("#"[0-9a-fA-F]{6}))
+ATTRIBUTE (([a-z]+)|("#"[0-9a-fA-F]{6}))
 DIGIT [0-9]
 NUMBER {DIGIT}*
 COORDINATE {NUMBER},{NUMBER}
+STRING (\"[^\"]*\")
 
 %x XSVG
 
@@ -24,18 +25,18 @@ COORDINATE {NUMBER},{NUMBER}
 \*[^*].+[^*]\*					{printf("%s ITALIC\n", yytext);}
 \__[^_]+\__						{printf("%s UNDERLINED\n", yytext);}
 \~~.+\~~				    	{printf("%s STRIKETHROUGH\n", yytext);}
-^#[ ].+\n 			        	{printf("%s H1 \n", yytext);}
-^##[ ].+\n   					{printf("%s H2 \n", yytext);}
-^###[ ].+\n 					{printf("%s H3 \n", yytext);}
-^####[ ].+\n    				{printf("%s H4 \n", yytext);}
-^#####[ ].+\n 					{printf("%s H5 \n", yytext);}
-^######[ ].+\n     				{printf("%s H6 \n", yytext);}
-
+^#[ ].+\n 			        	{printf("%s H1 TEXT\n", yytext);}
+^##[ ].+\n   					{printf("%s H2 TEXT\n", yytext);}
+^###[ ].+\n 					{printf("%s H3 TEXT\n", yytext);}
+^####[ ].+\n    				{printf("%s H4 TEXT\n", yytext);}
+^#####[ ].+\n 					{printf("%s H5 TEXT\n", yytext);}
+^######[ ].+\n     				{printf("%s H6 TEXT\n", yytext);}
+^\s*\n 							{printf("BLANK_LINE\n");}
 \n 								{printf("NEWLINE\n");}
 (\*\*\*.+\*\*\*)|(___.+___)		{printf("`%s` BOLD ITALIC\n", yytext);}
 ^[ ]*"* ".+						{printf("`%s` LIST ELEMENT\n", yytext);}
 ^[ ]*"- ".+						{printf("`%s` LIST ELEMENT\n", yytext);}
-^[ ]*[1-9][0-9]*". ".+			{printf("`%s` LIST ELEMENT\n", yytext); listIndex++;}
+^[ ]*[1-9][0-9]*". ".+			{printf("`%s` LIST ELEMENT\n", yytext);}
 (\<.+\>)|(\[.+\]\(.+\))			{printf("`%s` LINK\n", yytext);}
 \\[\!`_*{}()<>[\]#+-.|]{1,5}	{printf("`%s` ESCAPE_SEQ\n", yytext);}
 
@@ -43,21 +44,39 @@ COORDINATE {NUMBER},{NUMBER}
 	printf("%s XSVG\n", yytext);
 	BEGIN(XSVG); 
 }
-<XSVG>^"line "{COORDINATE}" "{COORDINATE}(" "{COLOR})?\n {
+<XSVG>^"line "{COORDINATE}" "{COORDINATE}(" "{ATTRIBUTE})?[ ]*\n {
 	printf("`%s` LINE\n", yytext);
 	REJECT; // Rejects the current match so we can match coordinates and color
 }
-<XSVG>^"circle "{COORDINATE}" "{NUMBER}(" "{COLOR})?\n {
+<XSVG>^"polyline"(" "{COORDINATE})+(" "{ATTRIBUTE})?[ ]*\n {
+	printf("`%s` POLYLINE\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>^"polygon"(" "{COORDINATE})+(" "{ATTRIBUTE}){0,2}[ ]*\n {
+	printf("`%s` POLYGON\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>^"circle "{COORDINATE}" "{NUMBER}(" "{ATTRIBUTE}){0,2}[ ]*\n {
 	printf("`%s` CIRCLE\n", yytext);
 	REJECT; // Rejects the current match so we can match coordinates and color
 }
-<XSVG>^"ellipse "{COORDINATE}" "{NUMBER}" "{NUMBER}(" "{COLOR}){0,2}\n {
+<XSVG>^"ellipse "{COORDINATE}(" "{NUMBER}){2}(" "{ATTRIBUTE}){0,2}[ ]*\n {
 	printf("`%s` ELLIPSE\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>^"rect "{COORDINATE}(" "{NUMBER}){2}(" "{ATTRIBUTE}){0,2}[ ]*\n {
+	printf("`%s` RECT\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>^"text "{COORDINATE}" "{STRING}(" "{ATTRIBUTE}){0,2}[ ]*\n {
+	printf("`%s` TEXT\n", yytext);
 	REJECT; // Rejects the current match so we can match coordinates and color
 }
 <XSVG>{COORDINATE}								{printf("`%s` COORDINATE\n", yytext);}
 <XSVG>{NUMBER}									{printf("`%s` NUMBER\n", yytext);}
-<XSVG>" "{COLOR}								{printf("`%s` COLOR\n", yytext);}
+<XSVG>{STRING}									{printf("`%s` STRING\n", yytext);}
+<XSVG>{ATTRIBUTE}							    {printf("`%s` ATTRIBUTE\n", yytext);}
+<XSVG>\n										{printf("NEWLINE\n");}
 
 <XSVG>^\`\`\`									{
 	printf("%s XSVG END\n", yytext);
