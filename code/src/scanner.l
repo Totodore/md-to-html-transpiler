@@ -10,13 +10,13 @@
 ^"##"     						{printf("`%s` is a h2\n", yytext);}
 \*\*.+\*\*						{printf("`%s` is a bold text\n", yytext);}
 
-\n 								{printf("New line\n");}
-(\*\*\*.+\*\*\*)|(___.+___)		{printf("`%s` is a bold italic text\n", yytext);}
-^[ \t]*"* ".+					{printf("`%s` is a list element\n", yytext);}
-^[ \t]*"- ".+					{printf("`%s` is a list element\n", yytext);}
-^[ \t]*[1-9][0-9]*". ".+		{printf("`%s` is an ordered list element\n", yytext); listIndex++;}
-(\<.+\>)|(\[.+\]\(.+\))			{printf("`%s` is a link\n", yytext);}
-\\[\!`_*{}()<>[\]#+-.|]{1,5}	{printf("`%s` is an escape sequence\n", yytext);}
+\n 								{printf("NEWLINE\n");}
+(\*\*\*.+\*\*\*)|(___.+___)		{printf("`%s` BOLD ITALIC\n", yytext);}
+^[ ]{,3}"* ".+					{printf("`%s` LIST ELEMENT\n", yytext);}
+^[ ]{,3}"- ".+					{printf("`%s` LIST ELEMENT\n", yytext);}
+^[ ]{,3}[1-9][0-9]*". ".+		{printf("`%s` LIST ELEMENT\n", yytext); listIndex++;}
+(\<.+\>)|(\[.+\]\(.+\))			{printf("`%s` LINK\n", yytext);}
+\\[\!`_*{}()<>[\]#+-.|]{1,5}	{printf("`%s` ESCAPE_SEQ\n", yytext);}
 %%
  
 /*** Code Section prints the number of
