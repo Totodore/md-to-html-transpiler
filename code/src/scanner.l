@@ -3,6 +3,11 @@
 	int count = 0;
 %}
 
+COLOR (([a-z]+)|("#"[0-9a-fA-F]{6}))
+DIGIT [0-9]
+NUMBER {DIGIT}*
+COORDINATE {NUMBER},{NUMBER}
+
 %x XSVG
 
 /*** Rules Section ***/
@@ -34,17 +39,36 @@
 (\<.+\>)|(\[.+\]\(.+\))			{printf("`%s` LINK\n", yytext);}
 \\[\!`_*{}()<>[\]#+-.|]{1,5}	{printf("`%s` ESCAPE_SEQ\n", yytext);}
 
-^\`\`\`xsvg\n					{BEGIN(XSVG); printf("%s XSVG\n", yytext);}
-<XSVG>^"line "[0-9]+,[0-9]+" "[0-9]+,[0-9]+(" "([a-z]+)|(" #"[0-9a-fA-F]{6}))?\n {
-	printf("`%s` LINE\n", yytext);
-	REJECT;
+^\`\`\`xsvg:{COORDINATE},{COORDINATE}\n		{
+	printf("%s XSVG\n", yytext);
+	BEGIN(XSVG); 
 }
-<XSVG>[0-9]+,[0-9]+						{printf("`%s` COORDINATE\n", yytext);}
-<XSVG>([a-z]+)|#([0-9a-fA-F]{6})		{printf("`%s` COLOR\n", yytext);}
+<XSVG>^"line "{COORDINATE}" "{COORDINATE}(" "{COLOR})?\n {
+	printf("`%s` LINE\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>^"circle "{COORDINATE}" "{NUMBER}(" "{COLOR})?\n {
+	printf("`%s` CIRCLE\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>^"ellipse "{COORDINATE}" "{NUMBER}" "{NUMBER}(" "{COLOR}){0,2}\n {
+	printf("`%s` ELLIPSE\n", yytext);
+	REJECT; // Rejects the current match so we can match coordinates and color
+}
+<XSVG>{COORDINATE}								{printf("`%s` COORDINATE\n", yytext);}
+<XSVG>{NUMBER}									{printf("`%s` NUMBER\n", yytext);}
+<XSVG>" "{COLOR}								{printf("`%s` COLOR\n", yytext);}
 
-<XSVG>^\`\`\`							{BEGIN(INITIAL);printf("%s XSVG END\n", yytext);}
+<XSVG>^\`\`\`									{
+	printf("%s XSVG END\n", yytext);
+	BEGIN(INITIAL);
+}
 %%
  
+/*** 
+CIRCLES
+ELLIPSES
+***/
 /*** Code Section prints the number of
 capital letter present in the given input ***/
 int yywrap(){}
