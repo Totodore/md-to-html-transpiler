@@ -21,8 +21,8 @@ STRING (\"[^\"]*\")
 (\>\.*\n)+                   	{ printf("%s QUOTE\n", yytext); }
 
 
-\*\*[^*].+[^*]\*\*				{printf("%s BOLD\n", yytext);}
-\*[^*].+[^*]\*					{printf("%s ITALIC\n", yytext);}
+\*\*([^*]+)\*\* 				{printf("%s BOLD\n", yytext);}
+\*([^*]+)\*					    {printf("%s ITALIC\n", yytext);}
 \__[^_]+\__						{printf("%s UNDERLINED\n", yytext);}
 \~~.+\~~				    	{printf("%s STRIKETHROUGH\n", yytext);}
 ^#[ ].+\n 			        	{printf("%s H1 TEXT\n", yytext);}
@@ -44,6 +44,7 @@ STRING (\"[^\"]*\")
 	printf("%s XSVG\n", yytext);
 	BEGIN(XSVG); 
 }
+.|\n 							{printf("`%s` TEXT\n", yytext);}
 <XSVG>^"line "{COORDINATE}" "{COORDINATE}(" "{ATTRIBUTE})?[ ]*\n {
 	printf("`%s` LINE\n", yytext);
 	REJECT; // Rejects the current match so we can match coordinates and color

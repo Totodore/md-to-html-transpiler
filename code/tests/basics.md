@@ -1,4 +1,5 @@
 **test**
+hello
 **azdazdaz**
 azdazd
 
@@ -23,4 +24,9 @@ rect 80,70 20 30
 text 10,30 "red" blue
 ```
 
-Hello **Bold**
+**Bold** Hello **Bold**
+***Bold Italic***
+*Talica*  try *Italic*
+**Bold**
+tru **Bold**
+---
