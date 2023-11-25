@@ -6,7 +6,7 @@
 
 COLOR (([a-z]+)|("#"[0-9a-fA-F]{6}))
 DIGIT [0-9]
-NUMBER DIGIT*
+NUMBER {DIGIT}*
 COORDINATE {NUMBER},{NUMBER}
 
 %x XSVG
