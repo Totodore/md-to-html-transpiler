@@ -9,7 +9,7 @@
 \*\*.+\*\*					{printf("%s BOLD\n", yytext);}
 \*.+\*						{printf("%s ITALIC\n", yytext);}
 \__.+\__					{printf("%s UNDERLINED\n", yytext);}
-\∼∼.+\∼∼				   {printf("%s STRIKETHROUGH\n", yytext);}
+\~~.+\~~				    {printf("%s STRIKETHROUGH\n", yytext);}
 [-][-][-]					{printf("%s HR\n", yytext);}
 ^#[ ].+\n 			        {printf("%s H1 \n", yytext);}
 ^##[ ].+\n   				{printf("%s H2 \n", yytext);}
