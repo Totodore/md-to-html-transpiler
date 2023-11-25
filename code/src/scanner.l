@@ -10,6 +10,19 @@
 ^"##"     						{printf("`%s` is a h2\n", yytext);}
 \*\*.+\*\*						{printf("`%s` is a bold text\n", yytext);}
 
+
+\*\*.+\*\*						{printf("%s BOLD\n", yytext);}
+\*.+\*							{printf("%s ITALIC\n", yytext);}
+\__.+\__						{printf("%s UNDERLINED\n", yytext);}
+\~~.+\~~				    	{printf("%s STRIKETHROUGH\n", yytext);}
+[-][-][-]						{printf("%s HR\n", yytext);}
+^#[ ].+\n 			        	{printf("%s H1 \n", yytext);}
+^##[ ].+\n   					{printf("%s H2 \n", yytext);}
+^###[ ].+\n 					{printf("%s H3 \n", yytext);}
+^####[ ].+\n    				{printf("%s H4 \n", yytext);}
+^#####[ ].+\n 					{printf("%s H5 \n", yytext);}
+^######[ ].+\n     				{printf("%s H6 \n", yytext);}
+
 \n 								{printf("NEWLINE\n");}
 (\*\*\*.+\*\*\*)|(___.+___)		{printf("`%s` BOLD ITALIC\n", yytext);}
 ^[ ]{,3}"* ".+					{printf("`%s` LIST ELEMENT\n", yytext);}
