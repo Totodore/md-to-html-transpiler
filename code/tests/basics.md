@@ -24,8 +24,8 @@ rect 80,70 20 30
 text 10,30 "red" blue
 ```
 
-**Bold** Hello **Bold**
-***Bold Italic***
+**Bold** #Hello **Bold**
+***Bold #h1 Italic***
 *Talica*  try *Italic*
 **Bold**
 tru **Bold**

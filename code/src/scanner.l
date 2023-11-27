@@ -1,6 +1,7 @@
 /*** Definition Section for global state ***/
 %{
 	int count = 0;
+	int coordinate = -1;
 %}
 
 ATTRIBUTE (([a-z]+)|("#"[0-9a-fA-F]{6}))
@@ -9,7 +10,8 @@ NUMBER {DIGIT}*
 COORDINATE {NUMBER},{NUMBER}
 STRING (\"[^\"]*\")
 
-%x XSVG
+%x XSVG 
+%x COORDINATE
 
 /*** Rules Section ***/
 %%
@@ -73,7 +75,7 @@ STRING (\"[^\"]*\")
 	printf("`%s` TEXT\n", yytext);
 	REJECT; // Rejects the current match so we can match coordinates and color
 }
-<XSVG>{COORDINATE}								{printf("`%s` COORDINATE\n", yytext);}
+<XSVG>{COORDINATE}								{BEGIN(COORDINATE); REJECT;}
 <XSVG>{NUMBER}									{printf("`%s` NUMBER\n", yytext);}
 <XSVG>{STRING}									{printf("`%s` STRING\n", yytext);}
 <XSVG>{ATTRIBUTE}							    {printf("`%s` ATTRIBUTE\n", yytext);}
@@ -83,8 +85,18 @@ STRING (\"[^\"]*\")
 	printf("%s XSVG END\n", yytext);
 	BEGIN(INITIAL);
 }
-%%
+
+<COORDINATE>{NUMBER}							{
+	printf("`%s` NUMBER\n", yytext);
+	if(coordinate){
+		BEGIN(XSVG);
+		coordinate = -1;
+	} else 
+		coordinate = 1;
+}
+<COORDINATE>","								{printf("`%s` COMMA\n", yytext);}
  
+%%
 /*** 
 CIRCLES
 ELLIPSES
