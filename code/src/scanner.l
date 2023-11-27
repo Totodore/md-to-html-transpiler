@@ -12,13 +12,14 @@ STRING (\"[^\"]*\")
 
 %x XSVG 
 %x COORDINATE
+%x BLOCK_CODE
 
 /*** Rules Section ***/
 %%
 \!\[.+\]\(.+\)					{ printf("%s IMAGE\n", yytext); }
 \>.+							{ printf("%s QUOTE\n", yytext); }
 ^\`\`\`\n[^`][^`][^`]*\`\`\`	{ printf("%s BLOCK_CODE\n", yytext); }
-\`[^\n\`]\`						{ printf("%s INLINE_CODE\n", yytext); }
+\`[^\n\`]*\`					{ printf("%s INLINE_CODE\n", yytext); }
 \*\*\*+|\-\-\-+|\_\_\_+			{ printf("%s HR\n", yytext); }
 (\>\.*\n)+                   	{ printf("%s QUOTE\n", yytext); }
 
