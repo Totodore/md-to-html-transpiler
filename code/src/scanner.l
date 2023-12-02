@@ -80,8 +80,42 @@ NUMBER
 newline "\n"
 bold "**"
 h1 "#"[[:blank:]]*
+h2 "##"[[:blank:]]*
+h3 "###"[[:blank:]]*
+h4 "####"[[:blank:]]*
+h5 "####"[[:blank:]]*
+h6 "####"[[:blank:]]*
+italic "*"
+underline "__"
+strikethrough "~~"
+quote ">"
+escapable_char "\\"
+list_item "[[:blank:]]*\\*"
+link "(\<.+\>)|(\[.+\]\(.+\))"
+image "\!\[.+\]\(.+\)"
+hr "---"
+inline_code "\`"
+block_code "\`\`\`"
+xsvg_begin "\`\`\`xsvg"
+xsvg_end "\`\`\`"
+comma ","
+line "line"
+polyline "polyline"
+polygon "polygon"
+circle "circle"
+ellipse "ellipse"
+rect "rect"
+xsvg_text "text"
+str "[^[:blank:]]+"
+number "[0-9]+"
+exclam "!"
+lparen "("
+rparen ")"
+lbracket "["
+rbracket "]"
+blank_line [[:blank:]]*{newline}[[:blank:]]*{newline}
 
-%x BOLD_MODE TEXT_MODE
+%x TEXT_MODE UNDERLINE_MODE STRIKETHROUGH_MODE ITALIC_MODE BLOCK_CODE_MODE INLINE_CODE_MODE BOLD_MODE
 
 %%
 
@@ -96,6 +130,44 @@ h1 "#"[[:blank:]]*
 ^{h1} {
     print_token("H1");
 }
+
+^{h2} {
+    print_token("H2");
+}
+
+^{h3} {
+    print_token("H3");
+}
+
+^{h4} {
+    print_token("H4");
+}
+
+^{h5} {
+    print_token("H5");
+}
+
+^{h6} {
+    print_token("H6");
+}
+
+
+<INITIAL>{italic} {
+    BEGIN_MODE(ITALIC_MODE);
+    print_token("ITALIC");
+};
+
+<ITALIC_MODE>{italic} {
+    END_MODE;
+
+    print_token("ITALIC");
+};
+
+<INITIAL,ITALIC_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+};
 
 <INITIAL>{bold}	{
     BEGIN_MODE(BOLD_MODE); // You can switch to another mode
@@ -119,7 +191,100 @@ h1 "#"[[:blank:]]*
     strbufapp(*yytext);
 };
 
-<TEXT_MODE>({newline}|{bold}|^{h1})(.|\n)* {
+<INITIAL>{underline} {
+    BEGIN_MODE(UNDERLINE_MODE);
+    print_token("UNDERLINE");
+};
+
+<UNDERLINE_MODE>{underline} {
+    END_MODE;
+
+    print_token("UNDERLINE");
+};
+
+<INITIAL,UNDERLINE_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+};
+
+<INITIAL>{strikethrough} {
+    BEGIN_MODE(STRIKETHROUGH_MODE);
+    print_token("STRIKETHROUGH");
+};
+
+<STRIKETHROUGH_MODE>{strikethrough} {
+    END_MODE;
+
+    print_token("STRIKETHROUGH");
+};
+
+<INITIAL,STRIKETHROUGH_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+};
+
+<INITIAL>{quote} {
+    print_token("QUOTE");
+};
+
+<INITIAL>{list_item} {
+    print_token("LIST_ITEM");
+};
+
+<INITIAL>{link} {
+    print_token("LINK");
+};
+
+<INITIAL>{image} {
+    print_token("IMAGE");
+};
+
+<INITIAL>{hr} {
+    print_token("HR");
+};
+
+<INITIAL>{inline_code} {
+    BEGIN_MODE(INLINE_CODE_MODE);
+    print_token("INLINE_CODE");
+};
+
+<INLINE_CODE_MODE>{inline_code} {
+    END_MODE;
+
+    print_token("INLINE_CODE");
+};
+
+<INITIAL,INLINE_CODE_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+
+};
+
+<INITIAL>{block_code} {
+    BEGIN_MODE(BLOCK_CODE_MODE);
+    print_token("BLOCK_CODE");
+};
+
+<BLOCK_CODE_MODE>{block_code} {
+    END_MODE;
+
+    print_token("BLOCK_CODE");
+};
+
+<INITIAL,BLOCK_CODE_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+};
+
+<INITIAL>{blank_line} {
+    print_token("BLANK_LINE");
+};
+
+<TEXT_MODE>({newline}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{italic}|{underline}|{strikethrough}|{quote}|{list_item}|{link}|{image}|{hr}|{inline_code}|{block_code}|{xsvg_begin}|{xsvg_end}|{comma}|{line}|{polyline}|{polygon}|{circle}|{ellipse}|{rect}|{xsvg_text}|{str}|{number}|{exclam}|{lparen}|{rparen}|{lbracket}|{rbracket})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
