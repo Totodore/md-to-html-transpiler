@@ -1,113 +1,260 @@
-/*** Definition Section for global state ***/
 %{
-	int count = 0;
-	int coordinate = -1;
+/*********** C CODE (YOU DO NOT HAVE TO MODIFY IT) ******************/
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+/* BEGIN MODE SYSTEM DECLARATION */
+int mode_caller[8];
+int mode_caller_len = 0;
+
+void mode_caller_push(int mode);
+int mode_caller_peek(void);
+int mode_caller_pop(void);
+
+#define BEGIN_MODE(mode) mode_caller_push(YY_START); BEGIN((mode));
+#define END_MODE BEGIN(mode_caller_pop());
+/* END MODE SYSTEM DECLARATION */
+
+/* BEGIN STRING MANIPULATION DECLARATION */
+#define STRBUFCAP 1024
+
+char* strbuf = NULL;
+size_t strbuflen = 0;
+
+void strbufapp(char c);
+char* strbufclr(void);
+char* str_copy(char *str);
+/* END STRING MANIPULATION DECLARATION */
+
+void print_token(char *token);
+void print_token_with_str(char *token, char *str);
+void print_token_with_number(char *token, int number);
+
+/*********** END OF C CODE ******************/
+
+/*
+Here is my personal list of tokens for my grammar.
+You are welcome to use it if your grammar does not match what was expected:
+
+NEWLINE
+BLANK_LINE
+BOLD
+ITALIC
+UNDERLINE
+STRIKETHROUGH
+H1
+H2
+H3
+H4
+H5
+H6
+QUOTE
+EXCLAM
+LPAREN
+RPAREN
+LBRACKET
+RBRACKET
+HR
+INLINE_CODE
+BLOCK_CODE
+XSVG_BEGIN
+XSVG_END
+COMMA
+LINE
+POLYLINE
+POLYGON
+CIRCLE
+ELLIPSE
+RECT
+XSVG_TEXT
+TEXT
+STR
+NUMBER
+*/
+
+/** YOU WILL HAVE TO COMPLETE THE DOCUMENT BELOW **/
 %}
 
-ATTRIBUTE (([a-z]+)|("#"[0-9a-fA-F]{6}))
-DIGIT [0-9]
-NUMBER {DIGIT}*
-COORDINATE {NUMBER},{NUMBER}
-STRING (\"[^\"]*\")
+newline "\n"
+bold "**"
+h1 "#"[[:blank:]]*
 
-%x XSVG 
-%x COORDINATE
-%x BLOCK_CODE
+%x BOLD_MODE TEXT_MODE
 
-/*** Rules Section ***/
 %%
-\!\[.+\]\(.+\)					{ printf("%s IMAGE\n", yytext); }
-\>.+							{ printf("%s QUOTE\n", yytext); }
-^\`\`\`\n[^`][^`][^`]*\`\`\`	{ printf("%s BLOCK_CODE\n", yytext); }
-\`[^\n\`]*\`					{ printf("%s INLINE_CODE\n", yytext); }
-\*\*\*+|\-\-\-+|\_\_\_+			{ printf("%s HR\n", yytext); }
-(\>\.*\n)+                   	{ printf("%s QUOTE\n", yytext); }
 
+<INITIAL>[[:blank:]]*{newline} {
+    print_token("NEWLINE"); // It will print the token NEWLINE
+};
 
-\*\*([^*]+)\*\* 				{printf("%s BOLD\n", yytext);}
-\*([^*]+)\*					    {printf("%s ITALIC\n", yytext);}
-\__[^_]+\__						{printf("%s UNDERLINED\n", yytext);}
-\~~.+\~~				    	{printf("%s STRIKETHROUGH\n", yytext);}
-^#[ ].+\n 			        	{printf("%s H1 TEXT\n", yytext);}
-^##[ ].+\n   					{printf("%s H2 TEXT\n", yytext);}
-^###[ ].+\n 					{printf("%s H3 TEXT\n", yytext);}
-^####[ ].+\n    				{printf("%s H4 TEXT\n", yytext);}
-^#####[ ].+\n 					{printf("%s H5 TEXT\n", yytext);}
-^######[ ].+\n     				{printf("%s H6 TEXT\n", yytext);}
-^\s*\n 							{printf("BLANK_LINE\n");}
-\n 								{printf("NEWLINE\n");}
-(\*\*\*.+\*\*\*)|(___.+___)		{printf("`%s` BOLD ITALIC\n", yytext);}
-^[ ]*"* ".+						{printf("`%s` LIST ELEMENT\n", yytext);}
-^[ ]*"- ".+						{printf("`%s` LIST ELEMENT\n", yytext);}
-^[ ]*[1-9][0-9]*". ".+			{printf("`%s` LIST ELEMENT\n", yytext);}
-(\<.+\>)|(\[.+\]\(.+\))			{printf("`%s` LINK\n", yytext);}
-\\[\!`_*{}()<>[\]#+-.|]{1,5}	{printf("`%s` ESCAPE_SEQ\n", yytext);}
+([[:blank:]]*{newline}){2} {
+    print_token("BLANK_LINE");
+};
 
-^\`\`\`xsvg:{COORDINATE},{COORDINATE}\n		{
-	printf("%s XSVG\n", yytext);
-	BEGIN(XSVG); 
-}
-.|\n 							{printf("`%s` TEXT\n", yytext);}
-<XSVG>^"line "{COORDINATE}" "{COORDINATE}(" "{ATTRIBUTE})?[ ]*\n {
-	printf("`%s` LINE\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>^"polyline"(" "{COORDINATE})+(" "{ATTRIBUTE})?[ ]*\n {
-	printf("`%s` POLYLINE\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>^"polygon"(" "{COORDINATE})+(" "{ATTRIBUTE}){0,2}[ ]*\n {
-	printf("`%s` POLYGON\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>^"circle "{COORDINATE}" "{NUMBER}(" "{ATTRIBUTE}){0,2}[ ]*\n {
-	printf("`%s` CIRCLE\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>^"ellipse "{COORDINATE}(" "{NUMBER}){2}(" "{ATTRIBUTE}){0,2}[ ]*\n {
-	printf("`%s` ELLIPSE\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>^"rect "{COORDINATE}(" "{NUMBER}){2}(" "{ATTRIBUTE}){0,2}[ ]*\n {
-	printf("`%s` RECT\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>^"text "{COORDINATE}" "{STRING}(" "{ATTRIBUTE}){0,2}[ ]*\n {
-	printf("`%s` TEXT\n", yytext);
-	REJECT; // Rejects the current match so we can match coordinates and color
-}
-<XSVG>{COORDINATE}								{BEGIN(COORDINATE); REJECT;}
-<XSVG>{NUMBER}									{printf("`%s` NUMBER\n", yytext);}
-<XSVG>{STRING}									{printf("`%s` STRING\n", yytext);}
-<XSVG>{ATTRIBUTE}							    {printf("`%s` ATTRIBUTE\n", yytext);}
-<XSVG>\n										{printf("NEWLINE\n");}
-
-<XSVG>^\`\`\`									{
-	printf("%s XSVG END\n", yytext);
-	BEGIN(INITIAL);
+^{h1} {
+    print_token("H1");
 }
 
-<COORDINATE>{NUMBER}							{
-	printf("`%s` NUMBER\n", yytext);
-	if(coordinate){
-		BEGIN(XSVG);
-		coordinate = -1;
-	} else 
-		coordinate = 1;
-}
-<COORDINATE>","								{printf("`%s` COMMA\n", yytext);}
- 
+<INITIAL>{bold}	{
+    BEGIN_MODE(BOLD_MODE); // You can switch to another mode
+
+    print_token("BOLD");
+};
+
+<BOLD_MODE>{bold} {
+    END_MODE; // It will go back to the previous mode
+
+    print_token("BOLD");
+};
+
+<INITIAL,BOLD_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    // yytext is containing the text captured by the regular
+    // expression.
+    // The expression "*yytext" is to catch only one character (the first one).
+    // We will append our character in a global string
+    strbufapp(*yytext);
+};
+
+<TEXT_MODE>({newline}|{bold}|^{h1})(.|\n)* {
+    END_MODE;
+
+    // We give the full capture to Flex to be analyzed again
+    // otherwise the content will be lost
+    yy_scan_string(yytext);
+
+    char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
+    char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
+    print_token_with_str("TEXT", copy); // Will print the token TEXT along with the string
+};
+
+<TEXT_MODE><<EOF>> {
+    // <<EOF>> means the end of the markdown file.
+    END_MODE;
+
+    char* txt = strbufclr();
+    char *copy = str_copy(txt);
+    print_token_with_str("TEXT", copy);
+};
+
+<TEXT_MODE>. {
+    strbufapp(*yytext);
+};
+
 %%
-/*** 
-CIRCLES
-ELLIPSES
-***/
-/*** Code Section prints the number of
-capital letter present in the given input ***/
-int yywrap(){}
 
-int main() {
-	yylex();
-	printf("\n");
-	return 0;
+/*********** C CODE (YOU DO NOT HAVE TO MODIFY IT) ******************/
+void mode_caller_push(int mode) {
+    mode_caller[mode_caller_len++] = mode;
 }
+
+int mode_caller_peek(void) {
+    return mode_caller_len == 0 ? INITIAL : mode_caller[mode_caller_len - 1];
+}
+
+int mode_caller_pop(void) {
+    int caller = mode_caller_peek();
+    if (mode_caller_len > 0) {
+        mode_caller_len--;
+    }
+    return caller;
+}
+
+void strbufapp(char c) {
+    if (strbuf == NULL) {
+        strbuf = malloc(sizeof(char) * STRBUFCAP);
+    }
+    if (strbuflen >= STRBUFCAP - 2) {
+        char* new_strbuf = malloc(sizeof(char) * 2 * STRBUFCAP);
+        strncpy(new_strbuf, strbuf, strbuflen);
+        free(strbuf);
+        strbuf = new_strbuf;
+    }
+    strbuf[strbuflen++] = c;
+}
+
+char* strbufclr(void) {
+    strbuf[strbuflen] = '\0';
+    strbuflen = 0;
+    return strbuf;
+}
+
+char* str_copy(char *str) {
+    char* copy = malloc(strlen(str) + 1);
+
+    strcpy(copy, str);
+
+    return copy;
+}
+
+void print_token(char *token) {
+    printf("TOKEN: %s\n", token);
+}
+
+void print_token_with_str(char *token, char *str) {
+    printf("TOKEN: %s | String: \"%s\"\n", token, str);
+}
+
+void print_token_with_number(char *token, int number) {
+    printf("TOKEN: %s | Number: \"%d\"\n", token, number);
+}
+
+int yywrap(void) {
+    return 1;
+}
+
+int main(int argc, char* argv[]) {
+#if YYDEBUG
+    extern int yydebug;
+    yydebug = 1;
+#endif
+    char* input = NULL;
+    char *original_input = NULL;
+    if (argc != 2) {
+        fprintf(stderr, "Please use program as: ./compo FILE.md");
+        return -1;
+    }
+
+    strbuf = malloc(sizeof(char) * STRBUFCAP);
+    FILE* f = fopen(argv[1], "r");
+    if (!f) {
+        fprintf(stderr, "Cannot open file");
+        return -1;
+    }
+    fseek(f, 0, SEEK_END);
+    int length = ftell(f);
+    rewind(f);
+    input = malloc(sizeof(char) * (length + 1));
+    original_input = input;
+    if (input == NULL) {
+        fprintf(stderr, "Cannot allocate enough memory for file");
+        return -2;
+    }
+    fread(input, sizeof(char), length, f);
+    fclose(f);
+    *(input + length) = 0;
+    unsigned int i = 0;
+    while (i < length && isspace(*input)) {
+        input++;
+        i++;
+    }
+    unsigned int j = length - i - 1;
+    while (j > i && isspace(*(input + j))) *(input + j--) = 0;
+    yy_scan_string(input);
+
+    int ret = yylex();
+
+    if (original_input != NULL) {
+        free(original_input);
+    }
+    yylex_destroy();
+    if (strbuf != NULL) {
+        free(strbuf);
+    }
+
+    return ret;
+}
+/*********** END OF C CODE ******************/
