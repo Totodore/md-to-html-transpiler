@@ -159,7 +159,6 @@ xsvg_end "\`\`\`"
     print_token("HR");
 }
 
-
 <INITIAL>{italic} {
     BEGIN_MODE(ITALIC_MODE);
     print_token("ITALIC");
