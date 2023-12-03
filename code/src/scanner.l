@@ -93,7 +93,7 @@ escapable_char "\\"
 list_item "[[:blank:]]*\\*"
 link "(\<.+\>)|(\[.+\]\(.+\))"
 image "\!\[.+\]\(.+\)"
-hr "---"
+hr "---"\n
 inline_code "\`"
 block_code "\`\`\`"
 comma ","
@@ -153,6 +153,10 @@ xsvg_end "\`\`\`"
 
 ^{h6} {
     print_token("H6");
+}
+
+^{hr} {
+    print_token("HR");
 }
 
 
@@ -273,7 +277,6 @@ xsvg_end "\`\`\`"
 };
 
 <BLOCK_CODE_MODE>{newline} {
-    BEGIN_MODE(BLOCK_CODE_MODE);
     print_token("NEWLINE");
 };
 
@@ -294,7 +297,7 @@ xsvg_end "\`\`\`"
     print_token("BLANK_LINE");
 };
 
-<TEXT_MODE>({newline}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{italic}|{underline}|{strikethrough}|{quote}|{list_item}|{link}|{image}|{hr}|{inline_code}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{lbracket}|{rbracket})(.|\n)* {
+<TEXT_MODE>({newline}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{italic}|{underline}|{strikethrough}|{quote}|{list_item}|{link}|{image}|{inline_code}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{lbracket}|{rbracket})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
