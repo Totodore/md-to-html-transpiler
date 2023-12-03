@@ -83,8 +83,8 @@ h1 "#"[[:blank:]]*
 h2 "##"[[:blank:]]*
 h3 "###"[[:blank:]]*
 h4 "####"[[:blank:]]*
-h5 "####"[[:blank:]]*
-h6 "####"[[:blank:]]*
+h5 "#####"[[:blank:]]*
+h6 "######"[[:blank:]]*
 italic "*"
 underline "__"
 strikethrough "~~"
@@ -158,7 +158,6 @@ xsvg_end "\`\`\`"
 ^{hr} {
     print_token("HR");
 }
-
 
 <INITIAL>{italic} {
     BEGIN_MODE(ITALIC_MODE);
