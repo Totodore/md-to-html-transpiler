@@ -83,8 +83,8 @@ h1 "#"[[:blank:]]*
 h2 "##"[[:blank:]]*
 h3 "###"[[:blank:]]*
 h4 "####"[[:blank:]]*
-h5 "####"[[:blank:]]*
-h6 "####"[[:blank:]]*
+h5 "#####"[[:blank:]]*
+h6 "######"[[:blank:]]*
 italic "*"
 underline "__"
 strikethrough "~~"
@@ -94,7 +94,7 @@ list_item "[[:blank:]]*\\*"
 link "(\<.+\>)|(\[.+\]\(.+\))"
 image "\!\[.+\]\(.+\)"
 hr "---"\n
-inline_code "\`"
+inline_code \`
 block_code "\`\`\`"
 comma ","
 line "line"
@@ -119,7 +119,7 @@ xsvg_text "text"
 xsvg_attribute (([a-z]+)|("#"[0-9a-fA-F]{6}))|\"([^\"]*)\"
 xsvg_end "\`\`\`"
 
-%x TEXT_MODE UNDERLINE_MODE STRIKETHROUGH_MODE ITALIC_MODE BLOCK_CODE_MODE INLINE_CODE_MODE BOLD_MODE 
+%x TEXT_MODE UNDERLINE_MODE STRIKETHROUGH_MODE ITALIC_MODE BLOCK_CODE_MODE INLINE_CODE_MODE BOLD_MODE IMAGE_MODE LINK_MODE
 %x SVG_MODE  SVG_COORD_MODE
 %%
 
@@ -233,7 +233,7 @@ xsvg_end "\`\`\`"
     strbufapp(*yytext);
 };
 
-<INITIAL>{quote} {
+<INITIAL>{quote}[[:blank:]]* {
     print_token("QUOTE");
 };
 
@@ -253,7 +253,7 @@ xsvg_end "\`\`\`"
     print_token("HR");
 };
 
-<INITIAL>{inline_code} {
+<INITIAL>{inline_code}. {
     BEGIN_MODE(INLINE_CODE_MODE);
     print_token("INLINE_CODE");
 };
@@ -286,18 +286,54 @@ xsvg_end "\`\`\`"
     print_token("BLOCK_CODE");
 };
 
-
 <INITIAL,BLOCK_CODE_MODE>. {
     BEGIN_MODE(TEXT_MODE);
 
     strbufapp(*yytext);
 };
 
-<INITIAL>{blank_line} {
+<INITIAL>{blank_line}. {
     print_token("BLANK_LINE");
 };
 
-<TEXT_MODE>({newline}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{italic}|{underline}|{strikethrough}|{quote}|{list_item}|{link}|{image}|{inline_code}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{lbracket}|{rbracket})(.|\n)* {
+<INITIAL>^{exclam}{lbracket} {
+    BEGIN_MODE(IMAGE_MODE); // You can switch to another mode
+
+    print_token("EXCLAM LBRACKET");
+};
+
+<IMAGE_MODE>{rbracket}{lparen}[^\n ]+{rparen} {
+    END_MODE; // It will go back to the previous mode
+
+    print_token("RBRACKET LPAREN TEXT RPAREN");
+};
+
+<INITIAL,IMAGE_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+};
+
+<INITIAL>[[:blank:]]*{lbracket}. {
+    BEGIN_MODE(LINK_MODE); // You can switch to another mode
+
+    print_token("LBRACKET");
+};
+
+<LINK_MODE>{rbracket}{lparen}[^\n ]+{rparen} {
+    END_MODE; // It will go back to the previous mode
+
+    print_token("RBRACKET LPAREN TEXT RPAREN");
+};
+
+<INITIAL,LINK_MODE>. {
+    BEGIN_MODE(TEXT_MODE);
+
+    strbufapp(*yytext);
+};
+
+
+<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
