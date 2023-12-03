@@ -272,11 +272,17 @@ xsvg_end "\`\`\`"
     print_token("BLOCK_CODE");
 };
 
+<BLOCK_CODE_MODE>{newline} {
+    BEGIN_MODE(BLOCK_CODE_MODE);
+    print_token("NEWLINE");
+};
+
 <BLOCK_CODE_MODE>{block_code} {
     END_MODE;
 
     print_token("BLOCK_CODE");
 };
+
 
 <INITIAL,BLOCK_CODE_MODE>. {
     BEGIN_MODE(TEXT_MODE);
