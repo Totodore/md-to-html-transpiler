@@ -96,8 +96,6 @@ image "\!\[.+\]\(.+\)"
 hr "---"
 inline_code "\`"
 block_code "\`\`\`"
-xsvg_begin "\`\`\`xsvg"
-xsvg_end "\`\`\`"
 comma ","
 line "line"
 polyline "polyline"
@@ -105,9 +103,8 @@ polygon "polygon"
 circle "circle"
 ellipse "ellipse"
 rect "rect"
-xsvg_text "text"
 str "[^[:blank:]]+"
-number "[0-9]+"
+number [0-9]+
 exclam "!"
 lparen "("
 rparen ")"
@@ -115,8 +112,15 @@ lbracket "["
 rbracket "]"
 blank_line [[:blank:]]*{newline}[[:blank:]]*{newline}
 
-%x TEXT_MODE UNDERLINE_MODE STRIKETHROUGH_MODE ITALIC_MODE BLOCK_CODE_MODE INLINE_CODE_MODE BOLD_MODE
+xsvg_begin "\`\`\`xsvg:"
+svg_coord {number},{number}
+svg_comma ,
+xsvg_text "text"
+xsvg_attribute (([a-z]+)|("#"[0-9a-fA-F]{6}))|\"([^\"]*)\"
+xsvg_end "\`\`\`"
 
+%x TEXT_MODE UNDERLINE_MODE STRIKETHROUGH_MODE ITALIC_MODE BLOCK_CODE_MODE INLINE_CODE_MODE BOLD_MODE 
+%x SVG_MODE  SVG_COORD_MODE
 %%
 
 <INITIAL>[[:blank:]]*{newline} {
@@ -284,7 +288,7 @@ blank_line [[:blank:]]*{newline}[[:blank:]]*{newline}
     print_token("BLANK_LINE");
 };
 
-<TEXT_MODE>({newline}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{italic}|{underline}|{strikethrough}|{quote}|{list_item}|{link}|{image}|{hr}|{inline_code}|{block_code}|{xsvg_begin}|{xsvg_end}|{comma}|{line}|{polyline}|{polygon}|{circle}|{ellipse}|{rect}|{xsvg_text}|{str}|{number}|{exclam}|{lparen}|{rparen}|{lbracket}|{rbracket})(.|\n)* {
+<TEXT_MODE>({newline}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{italic}|{underline}|{strikethrough}|{quote}|{list_item}|{link}|{image}|{hr}|{inline_code}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{lbracket}|{rbracket})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
@@ -308,6 +312,49 @@ blank_line [[:blank:]]*{newline}[[:blank:]]*{newline}
 <TEXT_MODE>. {
     strbufapp(*yytext);
 };
+
+<INITIAL>^{xsvg_begin} {
+    BEGIN_MODE(SVG_MODE);
+
+	print_token("XSVG_BEGIN");
+}
+
+<SVG_MODE>{svg_coord} {
+    print_token("NUMBER COMMA NUMBER");
+};
+
+<SVG_MODE>^"line " {
+    print_token("LINE");
+}
+<SVG_MODE>^"polyline " {
+    print_token("POLYLINE");
+}
+<SVG_MODE>^"polygon " {
+    print_token("POLYGON");
+}
+<SVG_MODE>^"circle " {
+    print_token("CIRCLE");
+}
+<SVG_MODE>^"ellipse " {
+    print_token("ELLIPSE");
+}
+<SVG_MODE>^"rect " {
+    print_token("RECT");
+}
+<SVG_MODE>^"xsvg_text " {
+    print_token("XSVG_TEXT");
+}
+<SVG_MODE>{xsvg_end} {
+    END_MODE; // It will go back to the previous mode
+
+    print_token("XSVG_END");
+};
+<SVG_MODE>{xsvg_attribute} {
+    print_token("STR");
+}
+<SVG_MODE>{newline} {
+
+}
 
 %%
 
