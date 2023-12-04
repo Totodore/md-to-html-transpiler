@@ -96,7 +96,6 @@ image "\!\[.+\]\(.+\)"
 hr "---"\n
 inline_code \`
 block_code "\`\`\`"
-comma ","
 line "line"
 polyline "polyline"
 polygon "polygon"
@@ -291,10 +290,6 @@ xsvg_end "\`\`\`"
     strbufapp(*yytext);
 };
 
-<INITIAL>{blank_line}. {
-    print_token("BLANK_LINE");
-};
-
 <INITIAL>^{exclam}{lbracket} {
     BEGIN_MODE(IMAGE_MODE); // You can switch to another mode
 
@@ -396,7 +391,7 @@ xsvg_end "\`\`\`"
 <SVG_MODE>{xsvg_attribute} {
     print_token("STR");
 }
-<SVG_MODE>{newline} {
+<SVG_MODE>({newline}|,|\n|[ ]) {
 
 }
 
