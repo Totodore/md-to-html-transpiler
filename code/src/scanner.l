@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "ast.h"
+#include "y.tab.h"
 
 /* BEGIN MODE SYSTEM DECLARATION */
 int mode_caller[8];
@@ -132,6 +134,7 @@ xsvg_end "\`\`\`"
 
 ^{h1} {
     print_token("H1");
+    return H1;
 }
 
 ^{h2} {
@@ -337,6 +340,8 @@ xsvg_end "\`\`\`"
     char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
     char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
     print_token_with_str("TEXT", copy); // Will print the token TEXT along with the string
+    yylval.text = copy;
+    return TEXT;
 };
 
 <TEXT_MODE><<EOF>> {
@@ -346,6 +351,7 @@ xsvg_end "\`\`\`"
     char* txt = strbufclr();
     char *copy = str_copy(txt);
     print_token_with_str("TEXT", copy);
+    return TEXT;
 };
 
 <TEXT_MODE>. {
