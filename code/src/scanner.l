@@ -126,10 +126,12 @@ xsvg_end "\`\`\`"
 
 <INITIAL>[[:blank:]]*{newline} {
     print_token("NEWLINE"); // It will print the token NEWLINE
+    return NEWLINE;
 };
 
 ([[:blank:]]*{newline}){2} {
     print_token("BLANK_LINE");
+    return BLANK_LINE;
 };
 
 ^{h1} {
@@ -139,6 +141,7 @@ xsvg_end "\`\`\`"
 
 ^{h2} {
     print_token("H2");
+    return H2;
 }
 
 ^{h3} {
@@ -182,12 +185,14 @@ xsvg_end "\`\`\`"
     BEGIN_MODE(BOLD_MODE); // You can switch to another mode
 
     print_token("BOLD");
+    return BOLD;
 };
 
 <BOLD_MODE>{bold} {
     END_MODE; // It will go back to the previous mode
 
     print_token("BOLD");
+    return BOLD;
 };
 
 <INITIAL,BOLD_MODE>. {
@@ -330,7 +335,7 @@ xsvg_end "\`\`\`"
 };
 
 
-<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
+<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{number}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
@@ -351,6 +356,8 @@ xsvg_end "\`\`\`"
     char* txt = strbufclr();
     char *copy = str_copy(txt);
     print_token_with_str("TEXT", copy);
+
+    yylval.text = copy;
     return TEXT;
 };
 

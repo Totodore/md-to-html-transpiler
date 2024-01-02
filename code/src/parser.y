@@ -80,7 +80,7 @@ DOM* dom_root = NULL;
 
 %token NEWLINE BLANK_LINE
 %token BOLD
-%token H1
+%token H1 H2 H3 H4 H5
 %token <text> TEXT
 
 %type <dom> document block
@@ -116,6 +116,22 @@ paragraph:
 block:
     H1 TEXT {
         $$ = new_dom(Header1, NULL);
+        $$->text = $2;
+    }
+    | H2 TEXT {
+        $$ = new_dom(Header2, NULL);
+        $$->text = $2;
+    }
+    | H3 TEXT {
+        $$ = new_dom(Header3, NULL);
+        $$->text = $2;
+    }
+    | H4 TEXT {
+        $$ = new_dom(Header4, NULL);
+        $$->text = $2;
+    }
+    | H5 TEXT {
+        $$ = new_dom(Header5, NULL);
         $$->text = $2;
     }
     | paragraph {

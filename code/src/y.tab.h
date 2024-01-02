@@ -58,7 +58,11 @@ extern int yydebug;
     BLANK_LINE = 259,              /* BLANK_LINE  */
     BOLD = 260,                    /* BOLD  */
     H1 = 261,                      /* H1  */
-    TEXT = 262                     /* TEXT  */
+    H2 = 262,                      /* H2  */
+    H3 = 263,                      /* H3  */
+    H4 = 264,                      /* H4  */
+    H5 = 265,                      /* H5  */
+    TEXT = 266                     /* TEXT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -78,7 +82,7 @@ union YYSTYPE
     SvgInst* svg;
     SvgList* svg_list;
 
-#line 82 "src/y.tab.h"
+#line 86 "src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
