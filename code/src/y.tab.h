@@ -57,12 +57,16 @@ extern int yydebug;
     NEWLINE = 258,                 /* NEWLINE  */
     BLANK_LINE = 259,              /* BLANK_LINE  */
     BOLD = 260,                    /* BOLD  */
-    H1 = 261,                      /* H1  */
-    H2 = 262,                      /* H2  */
-    H3 = 263,                      /* H3  */
-    H4 = 264,                      /* H4  */
-    H5 = 265,                      /* H5  */
-    TEXT = 266                     /* TEXT  */
+    ITALIC = 261,                  /* ITALIC  */
+    UNDERLINE = 262,               /* UNDERLINE  */
+    STRIKETHROUGH = 263,           /* STRIKETHROUGH  */
+    H1 = 264,                      /* H1  */
+    H2 = 265,                      /* H2  */
+    H3 = 266,                      /* H3  */
+    H4 = 267,                      /* H4  */
+    H5 = 268,                      /* H5  */
+    H6 = 269,                      /* H6  */
+    TEXT = 270                     /* TEXT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,7 +86,7 @@ union YYSTYPE
     SvgInst* svg;
     SvgList* svg_list;
 
-#line 86 "src/y.tab.h"
+#line 90 "src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

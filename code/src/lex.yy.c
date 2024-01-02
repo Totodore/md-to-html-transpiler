@@ -1068,40 +1068,44 @@ YY_RULE_SETUP
 #line 147 "src/scanner.l"
 {
     print_token("H3");
+    return H3;
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 151 "src/scanner.l"
+#line 152 "src/scanner.l"
 {
     print_token("H4");
+    return H4;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 155 "src/scanner.l"
+#line 157 "src/scanner.l"
 {
     print_token("H5");
+    return H5;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 159 "src/scanner.l"
+#line 162 "src/scanner.l"
 {
     print_token("H6");
+    return H6;
 }
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 163 "src/scanner.l"
+#line 167 "src/scanner.l"
 {
     print_token("HR");
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 167 "src/scanner.l"
+#line 171 "src/scanner.l"
 {
     BEGIN_MODE(ITALIC_MODE);
     print_token("ITALIC");
@@ -1109,7 +1113,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 172 "src/scanner.l"
+#line 176 "src/scanner.l"
 {
     END_MODE;
 
@@ -1118,7 +1122,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 178 "src/scanner.l"
+#line 182 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1127,7 +1131,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 184 "src/scanner.l"
+#line 188 "src/scanner.l"
 {
     BEGIN_MODE(BOLD_MODE); // You can switch to another mode
 
@@ -1137,7 +1141,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 191 "src/scanner.l"
+#line 195 "src/scanner.l"
 {
     END_MODE; // It will go back to the previous mode
 
@@ -1147,7 +1151,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 198 "src/scanner.l"
+#line 202 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1160,7 +1164,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 208 "src/scanner.l"
+#line 212 "src/scanner.l"
 {
     BEGIN_MODE(UNDERLINE_MODE);
     print_token("UNDERLINE");
@@ -1168,7 +1172,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 213 "src/scanner.l"
+#line 217 "src/scanner.l"
 {
     END_MODE;
 
@@ -1177,7 +1181,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 219 "src/scanner.l"
+#line 223 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1186,7 +1190,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 225 "src/scanner.l"
+#line 229 "src/scanner.l"
 {
     BEGIN_MODE(STRIKETHROUGH_MODE);
     print_token("STRIKETHROUGH");
@@ -1194,7 +1198,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 230 "src/scanner.l"
+#line 234 "src/scanner.l"
 {
     END_MODE;
 
@@ -1203,7 +1207,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 236 "src/scanner.l"
+#line 240 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1212,28 +1216,28 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 242 "src/scanner.l"
+#line 246 "src/scanner.l"
 {
     print_token("QUOTE");
 };
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 246 "src/scanner.l"
+#line 250 "src/scanner.l"
 {
     print_token("LIST_ITEM");
 };
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 250 "src/scanner.l"
+#line 254 "src/scanner.l"
 {
     print_token("LINK");
 };
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 254 "src/scanner.l"
+#line 258 "src/scanner.l"
 {
     print_token("IMAGE");
 };
@@ -1241,14 +1245,14 @@ YY_RULE_SETUP
 case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
-#line 258 "src/scanner.l"
+#line 262 "src/scanner.l"
 {
     print_token("HR");
 };
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 262 "src/scanner.l"
+#line 266 "src/scanner.l"
 {
     BEGIN_MODE(INLINE_CODE_MODE);
     print_token("INLINE_CODE");
@@ -1256,7 +1260,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 267 "src/scanner.l"
+#line 271 "src/scanner.l"
 {
     END_MODE;
 
@@ -1265,7 +1269,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 273 "src/scanner.l"
+#line 277 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1275,7 +1279,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 280 "src/scanner.l"
+#line 284 "src/scanner.l"
 {
     BEGIN_MODE(BLOCK_CODE_MODE);
     print_token("BLOCK_CODE");
@@ -1284,14 +1288,14 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 285 "src/scanner.l"
+#line 289 "src/scanner.l"
 {
     print_token("NEWLINE");
 };
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 289 "src/scanner.l"
+#line 293 "src/scanner.l"
 {
     END_MODE;
 
@@ -1300,7 +1304,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 295 "src/scanner.l"
+#line 299 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1309,7 +1313,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 301 "src/scanner.l"
+#line 305 "src/scanner.l"
 {
     BEGIN_MODE(IMAGE_MODE); // You can switch to another mode
 
@@ -1318,7 +1322,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 307 "src/scanner.l"
+#line 311 "src/scanner.l"
 {
     END_MODE; // It will go back to the previous mode
 
@@ -1327,7 +1331,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 313 "src/scanner.l"
+#line 317 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1336,7 +1340,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 319 "src/scanner.l"
+#line 323 "src/scanner.l"
 {
     BEGIN_MODE(LINK_MODE); // You can switch to another mode
 
@@ -1345,7 +1349,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 325 "src/scanner.l"
+#line 329 "src/scanner.l"
 {
     END_MODE; // It will go back to the previous mode
 
@@ -1354,7 +1358,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 331 "src/scanner.l"
+#line 335 "src/scanner.l"
 {
     BEGIN_MODE(TEXT_MODE);
 
@@ -1364,7 +1368,7 @@ YY_RULE_SETUP
 case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
-#line 338 "src/scanner.l"
+#line 342 "src/scanner.l"
 {
     END_MODE;
 
@@ -1380,7 +1384,7 @@ YY_RULE_SETUP
 };
 	YY_BREAK
 case YY_STATE_EOF(TEXT_MODE):
-#line 352 "src/scanner.l"
+#line 356 "src/scanner.l"
 {
     // <<EOF>> means the end of the markdown file.
     END_MODE;
@@ -1395,14 +1399,14 @@ case YY_STATE_EOF(TEXT_MODE):
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 364 "src/scanner.l"
+#line 368 "src/scanner.l"
 {
     strbufapp(*yytext);
 };
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 368 "src/scanner.l"
+#line 372 "src/scanner.l"
 {
     BEGIN_MODE(SVG_MODE);
 
@@ -1411,63 +1415,63 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 374 "src/scanner.l"
+#line 378 "src/scanner.l"
 {
     print_token("NUMBER COMMA NUMBER");
 };
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 378 "src/scanner.l"
+#line 382 "src/scanner.l"
 {
     print_token("LINE");
 }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 381 "src/scanner.l"
+#line 385 "src/scanner.l"
 {
     print_token("POLYLINE");
 }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 384 "src/scanner.l"
+#line 388 "src/scanner.l"
 {
     print_token("POLYGON");
 }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 387 "src/scanner.l"
+#line 391 "src/scanner.l"
 {
     print_token("CIRCLE");
 }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 390 "src/scanner.l"
+#line 394 "src/scanner.l"
 {
     print_token("ELLIPSE");
 }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 393 "src/scanner.l"
+#line 397 "src/scanner.l"
 {
     print_token("RECT");
 }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 396 "src/scanner.l"
+#line 400 "src/scanner.l"
 {
     print_token("XSVG_TEXT");
 }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 399 "src/scanner.l"
+#line 403 "src/scanner.l"
 {
     END_MODE; // It will go back to the previous mode
 
@@ -1477,7 +1481,7 @@ YY_RULE_SETUP
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 404 "src/scanner.l"
+#line 408 "src/scanner.l"
 {
     print_token("STR");
 }
@@ -1485,17 +1489,17 @@ YY_RULE_SETUP
 case 53:
 /* rule 53 can match eol */
 YY_RULE_SETUP
-#line 407 "src/scanner.l"
+#line 411 "src/scanner.l"
 {
 
 }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 411 "src/scanner.l"
+#line 415 "src/scanner.l"
 ECHO;
 	YY_BREAK
-#line 1499 "src/lex.yy.c"
+#line 1503 "src/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(UNDERLINE_MODE):
 case YY_STATE_EOF(STRIKETHROUGH_MODE):
@@ -2513,7 +2517,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 411 "src/scanner.l"
+#line 415 "src/scanner.l"
 
 
 /*********** C CODE (YOU DO NOT HAVE TO MODIFY IT) ******************/

@@ -79,8 +79,8 @@ DOM* dom_root = NULL;
 
 
 %token NEWLINE BLANK_LINE
-%token BOLD
-%token H1 H2 H3 H4 H5
+%token BOLD ITALIC UNDERLINE STRIKETHROUGH
+%token H1 H2 H3 H4 H5 H6
 %token <text> TEXT
 
 %type <dom> document block
@@ -97,6 +97,18 @@ text:
     }
     | BOLD text BOLD {
         DOM* dom = new_dom(Bold, $2);
+        $$ = new_dom_list(dom);
+    };
+    | ITALIC text ITALIC {
+        DOM* dom = new_dom(Italic, $2);
+        $$ = new_dom_list(dom);
+    };
+    | UNDERLINE text UNDERLINE {
+        DOM* dom = new_dom(Underline, $2);
+        $$ = new_dom_list(dom);
+    };
+    | STRIKETHROUGH text STRIKETHROUGH {
+        DOM* dom = new_dom(Strikethrough, $2);
         $$ = new_dom_list(dom);
     };
 line:
@@ -132,6 +144,10 @@ block:
     }
     | H5 TEXT {
         $$ = new_dom(Header5, NULL);
+        $$->text = $2;
+    }
+    | H6 TEXT {
+        $$ = new_dom(Header6, NULL);
         $$->text = $2;
     }
     | paragraph {

@@ -146,18 +146,22 @@ xsvg_end "\`\`\`"
 
 ^{h3} {
     print_token("H3");
+    return H3;
 }
 
 ^{h4} {
     print_token("H4");
+    return H4;
 }
 
 ^{h5} {
     print_token("H5");
+    return H5;
 }
 
 ^{h6} {
     print_token("H6");
+    return H6;
 }
 
 ^{hr} {
