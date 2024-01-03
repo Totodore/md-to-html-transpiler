@@ -339,7 +339,7 @@ xsvg_end "\`\`\`"
 };
 
 
-<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{number}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
+<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
