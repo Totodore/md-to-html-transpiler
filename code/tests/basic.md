@@ -1,4 +1,4 @@
-# hello
+# hello 
 
 ## hello
 
@@ -10,8 +10,10 @@
 
 ###### hello
 
-*ITALIC*
+*italic*
 
---Striketrough--
+~~Striketrough~~
 
 I am **ulala**!
+
+**ulala**
