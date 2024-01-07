@@ -82,6 +82,10 @@ DOM* dom_root = NULL;
 %token BOLD ITALIC UNDERLINE STRIKETHROUGH
 %token H1 H2 H3 H4 H5 H6
 %token <text> TEXT
+%token LPAREN RPAREN LBRACKET RBRACKET EXCLAM_LBRACKET
+%token QUOTE
+%token BLOCK_CODE INLINE_CODE
+%token HR
 
 %type <dom> document block
 %type <dom_list> block_list paragraph line text
@@ -94,7 +98,7 @@ text:
         DOM* dom = new_dom(TextElement, NULL);
         dom->text = $1;
         $$ = new_dom_list(dom);
-    }
+    };
     | BOLD text BOLD {
         DOM* dom = new_dom(Bold, $2);
         $$ = new_dom_list(dom);
@@ -111,6 +115,23 @@ text:
         DOM* dom = new_dom(Strikethrough, $2);
         $$ = new_dom_list(dom);
     };
+	| LBRACKET TEXT RBRACKET LPAREN TEXT RPAREN {
+		DOM* dom = new_dom(Link, NULL);
+		dom->text = $2;
+		dom->url = $5;
+		$$ = new_dom_list(dom);
+	};
+	| EXCLAM_LBRACKET TEXT RBRACKET LPAREN TEXT RPAREN {
+		DOM* dom = new_dom(Image, NULL);
+		dom->text = $2;
+		dom->url = $5;
+		$$ = new_dom_list(dom);
+	}
+	| INLINE_CODE TEXT INLINE_CODE {
+		DOM* dom = new_dom(InlineCode, NULL);
+		dom->text = $2;
+		$$ = new_dom_list(dom);
+	}
 line:
     text line {
         $$ = $1;
@@ -126,33 +147,30 @@ paragraph:
     }
     | line { $$ = $1; };
 block:
-    H1 TEXT {
-        $$ = new_dom(Header1, NULL);
-        $$->text = $2;
+    H1 text {
+        $$ = new_dom(Header1, $2);
     }
-    | H2 TEXT {
-        $$ = new_dom(Header2, NULL);
-        $$->text = $2;
+    | H2 text {
+        $$ = new_dom(Header2, $2);
     }
-    | H3 TEXT {
-        $$ = new_dom(Header3, NULL);
-        $$->text = $2;
+    | H3 text {
+        $$ = new_dom(Header3, $2);
     }
-    | H4 TEXT {
-        $$ = new_dom(Header4, NULL);
-        $$->text = $2;
+    | H4 text {
+        $$ = new_dom(Header4, $2);
     }
-    | H5 TEXT {
-        $$ = new_dom(Header5, NULL);
-        $$->text = $2;
+    | H5 text {
+        $$ = new_dom(Header5, $2);
     }
-    | H6 TEXT {
-        $$ = new_dom(Header6, NULL);
-        $$->text = $2;
+    | H6 text {
+        $$ = new_dom(Header6, $2);
     }
+	| QUOTE text {
+		$$ = new_dom(Quote, $2);
+	}
     | paragraph {
         $$ = new_dom(Paragraph, $1);
-    };
+    }
 block_list:
     block BLANK_LINE block_list {
         if ($1 == NULL) {
@@ -163,9 +181,35 @@ block_list:
             $$->next = $3;
         }
     }
+	| block NEWLINE block_list {
+		if ($1 == NULL) {
+			$$ = $3;
+		} else {
+			$$ = new_dom_list($1);
+
+			$$->next = $3;
+		}
+	}
     | block {
         $$ = new_dom_list($1);
-    };
+    }
+	| NEWLINE block_list {
+		$$ = $2;
+	}
+	| BLANK_LINE block_list {
+		$$ = $2;
+	}
+	| HR NEWLINE block_list {
+		DOM* dom = new_dom(HRule, NULL);
+		$$ = new_dom_list(dom);
+		$$->next = $3;
+	}
+	| BLOCK_CODE TEXT BLOCK_CODE NEWLINE block_list {
+		DOM* dom = new_dom(BlockCode, NULL);
+		dom->text = $2;
+		$$ = new_dom_list(dom);
+		$$->next = $5;
+	}
 
 document: block_list {
     dom_root = $$ = new_dom(Document, $1);
