@@ -171,12 +171,14 @@ xsvg_end "\`\`\`"
 <INITIAL>{italic} {
     BEGIN_MODE(ITALIC_MODE);
     print_token("ITALIC");
+    return ITALIC;
 };
 
 <ITALIC_MODE>{italic} {
     END_MODE;
 
     print_token("ITALIC");
+    return ITALIC;
 };
 
 <INITIAL,ITALIC_MODE>. {
@@ -212,12 +214,14 @@ xsvg_end "\`\`\`"
 <INITIAL>{underline} {
     BEGIN_MODE(UNDERLINE_MODE);
     print_token("UNDERLINE");
+    return UNDERLINE;
 };
 
 <UNDERLINE_MODE>{underline} {
     END_MODE;
 
     print_token("UNDERLINE");
+    return UNDERLINE;
 };
 
 <INITIAL,UNDERLINE_MODE>. {
@@ -229,12 +233,13 @@ xsvg_end "\`\`\`"
 <INITIAL>{strikethrough} {
     BEGIN_MODE(STRIKETHROUGH_MODE);
     print_token("STRIKETHROUGH");
+    return STRIKETHROUGH;
 };
 
 <STRIKETHROUGH_MODE>{strikethrough} {
     END_MODE;
-
     print_token("STRIKETHROUGH");
+    return STRIKETHROUGH;
 };
 
 <INITIAL,STRIKETHROUGH_MODE>. {
