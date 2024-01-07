@@ -1,4 +1,4 @@
 code/build
-code/src/*.tab.{c,h}
-code/src/*.yy.{c,h}
+code/src/*.tab.*
+code/src/*.yy.*
 code/out
