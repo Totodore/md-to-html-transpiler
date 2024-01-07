@@ -166,6 +166,7 @@ xsvg_end "\`\`\`"
 
 ^{hr} {
     print_token("HR");
+	return HR;
 }
 
 <INITIAL>{italic} {
@@ -250,18 +251,11 @@ xsvg_end "\`\`\`"
 
 <INITIAL>{quote}[[:blank:]]* {
     print_token("QUOTE");
+	return QUOTE;
 };
 
 <INITIAL>{list_item} {
     print_token("LIST_ITEM");
-};
-
-<INITIAL>{link} {
-    print_token("LINK");
-};
-
-<INITIAL>{image} {
-    print_token("IMAGE");
 };
 
 <INITIAL>{hr} {
@@ -271,34 +265,34 @@ xsvg_end "\`\`\`"
 <INITIAL>{inline_code}. {
     BEGIN_MODE(INLINE_CODE_MODE);
     print_token("INLINE_CODE");
+	strbufapp(*(yytext + 1)); // buf again the char captured by the . (dot)
+	return INLINE_CODE;
 };
 
 <INLINE_CODE_MODE>{inline_code} {
     END_MODE;
 
     print_token("INLINE_CODE");
+	return INLINE_CODE;
 };
 
 <INITIAL,INLINE_CODE_MODE>. {
     BEGIN_MODE(TEXT_MODE);
 
     strbufapp(*yytext);
-
 };
 
 <INITIAL>{block_code} {
     BEGIN_MODE(BLOCK_CODE_MODE);
     print_token("BLOCK_CODE");
-};
-
-<BLOCK_CODE_MODE>{newline} {
-    print_token("NEWLINE");
+	return BLOCK_CODE;
 };
 
 <BLOCK_CODE_MODE>{block_code} {
     END_MODE;
 
     print_token("BLOCK_CODE");
+	return BLOCK_CODE;
 };
 
 <INITIAL,BLOCK_CODE_MODE>. {
@@ -307,44 +301,45 @@ xsvg_end "\`\`\`"
     strbufapp(*yytext);
 };
 
-<INITIAL>^{exclam}{lbracket} {
+<INITIAL,TEXT_MODE>{exclam}{lbracket} {
     BEGIN_MODE(IMAGE_MODE); // You can switch to another mode
 
     print_token("EXCLAM LBRACKET");
+	return EXCLAM_LBRACKET;
 };
 
-<IMAGE_MODE>{rbracket}{lparen}[^\n ]+{rparen} {
-    END_MODE; // It will go back to the previous mode
-
-    print_token("RBRACKET LPAREN TEXT RPAREN");
-};
-
-<INITIAL,IMAGE_MODE>. {
-    BEGIN_MODE(TEXT_MODE);
-
-    strbufapp(*yytext);
-};
-
-<INITIAL>[[:blank:]]*{lbracket}. {
+<INITIAL,TEXT_MODE>{lbracket}. {
     BEGIN_MODE(LINK_MODE); // You can switch to another mode
 
     print_token("LBRACKET");
+    strbufapp(*(yytext + 1)); // buf again the char captured by the . (dot)
+	return LBRACKET;
 };
 
-<LINK_MODE>{rbracket}{lparen}[^\n ]+{rparen} {
+<LINK_MODE,IMAGE_MODE>{rbracket} {
+	print_token("RBRACKET");
+	return RBRACKET;
+}
+<LINK_MODE,IMAGE_MODE>{lparen} {
+    print_token("LPARENT");
+	return LPAREN;
+};
+
+<LINK_MODE,IMAGE_MODE>{rparen} {
     END_MODE; // It will go back to the previous mode
 
-    print_token("RBRACKET LPAREN TEXT RPAREN");
+    print_token("RPARENT");
+	return RPAREN;
 };
 
-<INITIAL,LINK_MODE>. {
+<INITIAL,LINK_MODE,IMAGE_MODE>. {
     BEGIN_MODE(TEXT_MODE);
 
     strbufapp(*yytext);
 };
 
 
-<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
+<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end}|{exclam}{lbracket})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
