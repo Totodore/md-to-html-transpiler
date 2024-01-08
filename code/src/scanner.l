@@ -282,23 +282,40 @@ xsvg_end "\`\`\`"
     strbufapp(*yytext);
 };
 
-<INITIAL>{block_code} {
+<INITIAL>{block_code}{newline} {
     BEGIN_MODE(BLOCK_CODE_MODE);
     print_token("BLOCK_CODE");
 	return BLOCK_CODE;
 };
 
-<BLOCK_CODE_MODE>{block_code} {
-    END_MODE;
-
-    print_token("BLOCK_CODE");
-	return BLOCK_CODE;
+<BLOCK_CODE_MODE>. {
+	strbufapp(*yytext);
 };
 
-<INITIAL,BLOCK_CODE_MODE>. {
-    BEGIN_MODE(TEXT_MODE);
+<BLOCK_CODE_MODE>{newline}{block_code} {
+	END_MODE;
 
-    strbufapp(*yytext);
+    char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
+    char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
+    print_token_with_str("TEXT_CODE", copy); // Will print the token TEXT along with the string
+    yylval.text = copy;
+
+	return TEXT;
+};
+
+<BLOCK_CODE_MODE>{newline} {
+	strbufapp(*yytext);
+};
+
+<BLOCK_CODE_MODE><<EOF>> {
+	END_MODE;
+
+    char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
+    char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
+    print_token_with_str("TEXT_CODE", copy); // Will print the token TEXT along with the string
+    yylval.text = copy;
+
+	return TEXT;
 };
 
 <INITIAL,TEXT_MODE>{exclam}{lbracket} {

@@ -204,11 +204,16 @@ block_list:
 		$$ = new_dom_list(dom);
 		$$->next = $3;
 	}
-	| BLOCK_CODE TEXT BLOCK_CODE NEWLINE block_list {
+	| BLOCK_CODE TEXT BLANK_LINE block_list {
 		DOM* dom = new_dom(BlockCode, NULL);
 		dom->text = $2;
 		$$ = new_dom_list(dom);
-		$$->next = $5;
+		$$->next = $4;
+	}
+	| BLOCK_CODE TEXT {
+		DOM* dom = new_dom(BlockCode, NULL);
+		dom->text = $2;
+		$$ = new_dom_list(dom);
 	}
 
 document: block_list {
