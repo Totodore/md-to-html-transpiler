@@ -41,6 +41,7 @@ typedef enum svg_inst_kind {
     Ellipse,
     Rect,
     Text,
+	Coords
 } SvgInstKind;
 
 typedef struct svg_coord {

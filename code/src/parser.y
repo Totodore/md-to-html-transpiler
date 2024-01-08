@@ -36,7 +36,7 @@ const char *tokens[] = {
     "InlineCode",
     "BlockCode",
     "HRule",
-    "SVG"
+    "SVG",
 };
 
 const char* svg_tokens[] = {
@@ -46,7 +46,8 @@ const char* svg_tokens[] = {
     "Circle",
     "Ellipse",
     "Rect",
-    "Text"
+    "Text",
+	"Coords",
 };
 
 DOM* dom_root = NULL;
@@ -80,15 +81,20 @@ DOM* dom_root = NULL;
 
 %token NEWLINE BLANK_LINE
 %token BOLD ITALIC UNDERLINE STRIKETHROUGH
-%token H1 H2 H3 H4 H5 H6
+%token H1 H2 H3 H4 H5 H6 HR
 %token <text> TEXT
+%token <number> NUMBER
 %token LPAREN RPAREN LBRACKET RBRACKET EXCLAM_LBRACKET
 %token QUOTE
 %token BLOCK_CODE INLINE_CODE
-%token HR
+%token XSVG_BEGIN XSVG_END COMMA
 
 %type <dom> document block
 %type <dom_list> block_list paragraph line text
+%type <svg_list> svg_list
+%type <svg_coord_list> svg_coord_list
+%type <svg_coord> svg_coord
+%type <svg> svg
 %start document
 
 %%
@@ -132,6 +138,32 @@ text:
 		dom->text = $2;
 		$$ = new_dom_list(dom);
 	}
+svg:
+	// match SVG instructions (Line..., ...)
+svg_list:
+	svg {
+		$$ = new_svg_list($1);
+	}
+	| svg svg_list {
+		SvgList* curr = $2;
+		while (curr->next != NULL) curr = curr->next;
+		curr->next = new_svg_list($1);
+		$$ = $2;
+	}
+svg_coord:
+	NUMBER COMMA NUMBER {
+		$$ = new_svg_coord($1, $3);
+	}
+svg_coord_list:
+	svg_coord {
+		$$ = $1;
+	}
+	| svg_coord svg_coord_list {
+		SvgCoordList* curr = $2;
+		while (curr->next != NULL) curr = curr->next;
+		curr->next = $1;
+		$$ = $2;
+	}
 line:
     text line {
         $$ = $1;
@@ -172,7 +204,19 @@ block:
         $$ = new_dom(Paragraph, $1);
     }
 block_list:
-    block BLANK_LINE block_list {
+	XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		coord_list->next = new_svg_coord_list($4);
+
+		SvgInst* coord = new_svg_inst(Coords, coord_list);
+
+		DOM* dom = new_dom(SVG, NULL);
+		dom->svg_children = new_svg_list(coord);
+		dom->svg_children->next = $5;
+
+		$$ = new_dom_list(dom);
+	}
+    | block BLANK_LINE block_list {
         if ($1 == NULL) {
             $$ = $3;
         } else {
@@ -215,6 +259,7 @@ block_list:
 		dom->text = $2;
 		$$ = new_dom_list(dom);
 	}
+	
 
 document: block_list {
     dom_root = $$ = new_dom(Document, $1);

@@ -390,11 +390,20 @@ xsvg_end "\`\`\`"
     BEGIN_MODE(SVG_MODE);
 
 	print_token("XSVG_BEGIN");
+
+	return XSVG_BEGIN;
 }
 
-<SVG_MODE>{svg_coord} {
-    print_token("NUMBER COMMA NUMBER");
-};
+<SVG_MODE>{number} {
+	print_token("NUMBER");
+	yylval.number = atoi(yytext);
+	return NUMBER;
+}
+
+<SVG_MODE>{svg_comma} {
+	print_token("COMMA");
+	return COMMA;
+}
 
 <SVG_MODE>^"line " {
     print_token("LINE");
@@ -421,6 +430,8 @@ xsvg_end "\`\`\`"
     END_MODE; // It will go back to the previous mode
 
     print_token("XSVG_END");
+
+	return XSVG_END;
 };
 <SVG_MODE>{xsvg_attribute} {
     print_token("STR");

@@ -87,3 +87,8 @@ term
 ### Strikethrough
 
 ~~The world is flat.~~
+
+```xsvg:123,456,789,012
+
+
+```
