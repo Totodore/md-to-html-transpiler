@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "ast.h"
+#include "code_generation.h"
+#include "simple_strings.h"
+
 
 #define CHECK_YYNOMEM(ptr) if ((ptr) == NULL) YYNOMEM;
 #define CHECK_LENGTH(var, num) if ((num) >= 0) var = num; else { yyerror("negative length"); YYERROR; }
@@ -91,10 +94,6 @@ DOM* dom_root = NULL;
 
 %type <dom> document block
 %type <dom_list> block_list paragraph line text
-%type <svg_list> svg_list
-%type <svg_coord_list> svg_coord_list
-%type <svg_coord> svg_coord
-%type <svg> svg
 %start document
 
 %%
@@ -138,32 +137,9 @@ text:
 		dom->text = $2;
 		$$ = new_dom_list(dom);
 	}
-svg:
+    
 	// match SVG instructions (Line..., ...)
-svg_list:
-	svg {
-		$$ = new_svg_list($1);
-	}
-	| svg svg_list {
-		SvgList* curr = $2;
-		while (curr->next != NULL) curr = curr->next;
-		curr->next = new_svg_list($1);
-		$$ = $2;
-	}
-svg_coord:
-	NUMBER COMMA NUMBER {
-		$$ = new_svg_coord($1, $3);
-	}
-svg_coord_list:
-	svg_coord {
-		$$ = $1;
-	}
-	| svg_coord svg_coord_list {
-		SvgCoordList* curr = $2;
-		while (curr->next != NULL) curr = curr->next;
-		curr->next = $1;
-		$$ = $2;
-	}
+
 line:
     text line {
         $$ = $1;
@@ -204,19 +180,7 @@ block:
         $$ = new_dom(Paragraph, $1);
     }
 block_list:
-	XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END {
-		SvgCoordList* coord_list = new_svg_coord_list($2);
-		coord_list->next = new_svg_coord_list($4);
-
-		SvgInst* coord = new_svg_inst(Coords, coord_list);
-
-		DOM* dom = new_dom(SVG, NULL);
-		dom->svg_children = new_svg_list(coord);
-		dom->svg_children->next = $5;
-
-		$$ = new_dom_list(dom);
-	}
-    | block BLANK_LINE block_list {
+    block BLANK_LINE block_list {
         if ($1 == NULL) {
             $$ = $3;
         } else {
@@ -385,6 +349,14 @@ int main(int argc, char* argv[]) {
     if (ret > 0) return ret;
     else {
         dom_display(dom_root, 1);
+
+        string code = code_generation(dom_root);
+
+        FILE* fres = fopen("out/result.html", "w");
+
+        fprintf(fres, "%s", code);
+
+        fclose(fres);
 
         free_dom(dom_root);
     }
