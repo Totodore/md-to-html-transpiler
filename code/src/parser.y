@@ -350,9 +350,7 @@ block_list:
 		dom->text = $2;
 		$$ = new_dom_list(dom);
 	}
-	| BLANK_LINE block_list {
-		$$ = $2;
-	}
+	
 
 document: block_list {
     dom_root = $$ = new_dom(Document, $1);
