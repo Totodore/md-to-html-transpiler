@@ -74,6 +74,7 @@ typedef struct dom {
     struct dom_list* children; // A reference to the first element of a list of dom elements. NULL if no children.
     SvgList* svg_children; // A reference to the first element of a list of svg instructions. NULL if no children.
     char* text; // A text parameter that can be used for TextElement, Header, Link and Image elements. NULL if not needed.
+    SvgCoordList* svg_coords; // A reference to the first element of a list of svg coordinates. NULL if no coordinates needed.
     char* url; // A url parameter that can be used for Link and Image elements. NULL if not needed.
 } DOM;
 

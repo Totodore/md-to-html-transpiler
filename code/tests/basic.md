@@ -17,5 +17,3 @@ some **Bold** text
 __Underlined__
 
 
----
-
