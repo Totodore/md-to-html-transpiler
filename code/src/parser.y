@@ -155,26 +155,33 @@ paragraph:
     }
     | line { $$ = $1; };
 block:
-    H1 text {
-        $$ = new_dom(Header1, $2);
+    H1 TEXT {
+        $$ = new_dom(Header1, NULL);
+        $$->text = $2;
     }
-    | H2 text {
-        $$ = new_dom(Header2, $2);
+    | H2 TEXT {
+        $$ = new_dom(Header2, NULL);
+         $$->text = $2;
     }
-    | H3 text {
-        $$ = new_dom(Header3, $2);
+    | H3 TEXT {
+        $$ = new_dom(Header3, NULL);
+         $$->text = $2;
     }
-    | H4 text {
-        $$ = new_dom(Header4, $2);
+    | H4 TEXT {
+        $$ = new_dom(Header4, NULL);
+         $$->text = $2;
     }
-    | H5 text {
-        $$ = new_dom(Header5, $2);
+    | H5 TEXT {
+        $$ = new_dom(Header5, NULL);
+         $$->text = $2;
     }
-    | H6 text {
-        $$ = new_dom(Header6, $2);
+    | H6 TEXT {
+        $$ = new_dom(Header6, NULL);
+         $$->text = $2;
     }
-	| QUOTE text {
-		$$ = new_dom(Quote, $2);
+	| QUOTE TEXT {
+		$$ = new_dom(Quote, NULL);
+        $$->text = $2;
 	}
     | paragraph {
         $$ = new_dom(Paragraph, $1);

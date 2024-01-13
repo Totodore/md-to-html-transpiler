@@ -58,6 +58,66 @@ string code_generation_from_dom(DOM* dom, unsigned int indent) {
 
             return html;
         }
+        case Header2: {
+            string html = STR("");
+            add_indentation(html, indent);
+
+            APPEND_ARR(html, "<h2>");
+            APPEND_ARR(html, dom->text);
+            APPEND_ARR(html, "</h2>\n");
+
+            return html;
+        }
+        case Header3: {
+            string html = STR("");
+            add_indentation(html, indent);
+
+            APPEND_ARR(html, "<h3>");
+            APPEND_ARR(html, dom->text);
+            APPEND_ARR(html, "</h3>\n");
+
+            return html;
+        }
+        case Header4: {
+            string html = STR("");
+            add_indentation(html, indent);
+
+            APPEND_ARR(html, "<h4>");
+            APPEND_ARR(html, dom->text);
+            APPEND_ARR(html, "</h4>\n");
+
+            return html;
+        }
+        case Header5: {
+            string html = STR("");
+            add_indentation(html, indent);
+
+            APPEND_ARR(html, "<h5>");
+            APPEND_ARR(html, dom->text);
+            APPEND_ARR(html, "</h5>\n");
+
+            return html;
+        }
+        case Header6: {
+            string html = STR("");
+            add_indentation(html, indent);
+
+            APPEND_ARR(html, "<h6>");
+            APPEND_ARR(html, dom->text);
+            APPEND_ARR(html, "</h6>\n");
+
+            return html;
+        }
+        case Quote: {
+            string html = STR("");
+            add_indentation(html, indent);
+
+            APPEND_ARR(html, "<blockquote>");
+            APPEND_ARR(html, dom->text);
+            APPEND_ARR(html, "</blockquote>\n");
+
+            return html;
+        }
         case Paragraph: {
             string html = STR("");
             add_indentation(html, indent);
@@ -106,6 +166,45 @@ string code_generation_from_dom(DOM* dom, unsigned int indent) {
             }
 
             APPEND_ARR(html, "</b>");
+
+            return html;
+        }
+        case Italic: {
+            string html = STR("<i>");
+
+            if (dom->children != NULL) {
+                string content = code_generation_from_dom(dom->children->dom, indent + 1); // Identation not relevant here
+
+                APPEND_STR(html, content);
+            }
+
+            APPEND_ARR(html, "</i>");
+
+            return html;
+        }
+        case Underline: {
+            string html = STR("<u>");
+
+            if (dom->children != NULL) {
+                string content = code_generation_from_dom(dom->children->dom, indent + 1); // Identation not relevant here
+
+                APPEND_STR(html, content);
+            }
+
+            APPEND_ARR(html, "</u>");
+
+            return html;
+        }
+        case Strikethrough: {
+            string html = STR("<s>");
+
+            if (dom->children != NULL) {
+                string content = code_generation_from_dom(dom->children->dom, indent + 1); // Identation not relevant here
+
+                APPEND_STR(html, content);
+            }
+
+            APPEND_ARR(html, "</s>");
 
             return html;
         }
