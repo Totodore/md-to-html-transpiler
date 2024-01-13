@@ -9,7 +9,7 @@ all: compo
 compo: out
 	bison $(if $(VERBOSE),-tv -Wcounterexamples) -o src/y.tab.c -d src/parser.y
 	flex $(if $(VERBOSE),-d) -o src/lex.yy.c src/scanner.l
-	gcc $(if $(DEBUG),-g) -lfl -o out/compo src/lex.yy.c src/y.tab.c src/ast.c
+	gcc -g -lfl -o out/compo src/lex.yy.c src/y.tab.c src/ast.c
 
 out:
 	mkdir -p out

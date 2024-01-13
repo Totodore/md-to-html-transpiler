@@ -47,7 +47,6 @@ const char* svg_tokens[] = {
     "Ellipse",
     "Rect",
     "Text",
-	"Coords",
 };
 
 DOM* dom_root = NULL;
@@ -82,12 +81,13 @@ DOM* dom_root = NULL;
 %token NEWLINE BLANK_LINE
 %token BOLD ITALIC UNDERLINE STRIKETHROUGH
 %token H1 H2 H3 H4 H5 H6 HR
-%token <text> TEXT
+%token <text> TEXT XSVG_ATTR
 %token <number> NUMBER
 %token LPAREN RPAREN LBRACKET RBRACKET EXCLAM_LBRACKET
 %token QUOTE
 %token BLOCK_CODE INLINE_CODE
 %token XSVG_BEGIN XSVG_END COMMA
+%token LINE POLYLINE POLYGON CIRCLE ELLIPSE RECT XSVG_TEXT
 
 %type <dom> document block
 %type <dom_list> block_list paragraph line text
@@ -140,15 +140,95 @@ text:
 	}
 svg:
 	// match SVG instructions (Line..., ...)
+	LINE svg_coord svg_coord XSVG_ATTR {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		coord_list->next = new_svg_coord_list($3);
+
+		SvgInst* line = new_svg_inst(Line, coord_list);
+		line->color_fill = $4;
+
+		$$ = line;
+	}
+	| POLYLINE svg_coord_list XSVG_ATTR {
+		SvgInst* polyline = new_svg_inst(Polyline, $2);
+		polyline->color_fill = $3;
+
+		$$ = polyline;
+	}
+	| POLYGON svg_coord_list XSVG_ATTR XSVG_ATTR {
+		SvgInst* polygon = new_svg_inst(Polygon, $2);
+		polygon->color_stroke = $3;
+		polygon->color_fill = $4;
+
+		$$ = polygon;
+	}
+	| CIRCLE svg_coord NUMBER XSVG_ATTR XSVG_ATTR {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		SvgInst* circle = new_svg_inst(Circle, coord_list);
+		circle->width = $3;
+		
+		circle->color_stroke = $4;
+		circle->color_fill = $5;
+
+		$$ = circle;
+	}
+	| ELLIPSE svg_coord NUMBER NUMBER XSVG_ATTR XSVG_ATTR {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		SvgInst* ellipse = new_svg_inst(Ellipse, coord_list);
+
+		ellipse->width = $3;
+		ellipse->height = $4;
+
+		ellipse->color_stroke = $5;
+		ellipse->color_fill = $6;
+
+		$$ = ellipse;
+	}
+	| RECT svg_coord NUMBER NUMBER XSVG_ATTR XSVG_ATTR {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		SvgInst* rect = new_svg_inst(Rect, coord_list);
+		rect->width = $3;
+		rect->height = $4;
+
+		rect->color_stroke = $5;
+		rect->color_fill = $6;
+
+		$$ = rect;
+	}
+	| XSVG_TEXT svg_coord XSVG_ATTR XSVG_ATTR XSVG_ATTR {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		SvgInst* text = new_svg_inst(Text, coord_list);
+		text->text = $3;
+
+		text->anchor = $4;
+		text->color_fill = $5;
+
+		$$ = text;
+	}
 svg_list:
 	svg {
 		$$ = new_svg_list($1);
 	}
-	| svg svg_list {
-		SvgList* curr = $2;
-		while (curr->next != NULL) curr = curr->next;
-		curr->next = new_svg_list($1);
+	| svg NEWLINE XSVG_END {
+		$$ = new_svg_list($1);
+	}
+	| svg NEWLINE svg_list {
+		if ($1 == NULL) {
+            $$ = $3;
+        } else {
+            $$ = new_svg_list($1);
+
+            $$->next = $3;
+        }
+	}
+	| NEWLINE svg_list {
 		$$ = $2;
+	}
+	| svg_list NEWLINE {
+		$$ = $1;
+	}
+	| NEWLINE {
+		$$ = NULL;
 	}
 svg_coord:
 	NUMBER COMMA NUMBER {
@@ -156,13 +236,13 @@ svg_coord:
 	}
 svg_coord_list:
 	svg_coord {
-		$$ = $1;
+		$$ = new_svg_coord_list($1);
 	}
-	| svg_coord svg_coord_list {
-		SvgCoordList* curr = $2;
+	| svg_coord_list svg_coord {
+		SvgCoordList* curr = $1;
 		while (curr->next != NULL) curr = curr->next;
-		curr->next = $1;
-		$$ = $2;
+		curr->next = new_svg_coord_list($2);
+		$$ = $1;
 	}
 line:
     text line {
@@ -204,15 +284,26 @@ block:
         $$ = new_dom(Paragraph, $1);
     }
 block_list:
-	XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END {
+	XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END block_list {
 		SvgCoordList* coord_list = new_svg_coord_list($2);
 		coord_list->next = new_svg_coord_list($4);
-
 		SvgInst* coord = new_svg_inst(Coords, coord_list);
 
 		DOM* dom = new_dom(SVG, NULL);
-		dom->svg_children = new_svg_list(coord);
-		dom->svg_children->next = $5;
+		dom->svg_children = $5;
+		dom->svg_coords = coord_list;
+
+		$$ = new_dom_list(dom);
+		$$->next = $7;
+	}
+	| XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END {
+		SvgCoordList* coord_list = new_svg_coord_list($2);
+		coord_list->next = new_svg_coord_list($4);
+		SvgInst* coord = new_svg_inst(Coords, coord_list);
+
+		DOM* dom = new_dom(SVG, NULL);
+		dom->svg_children = $5;
+		dom->svg_coords = coord_list;
 
 		$$ = new_dom_list(dom);
 	}
@@ -259,7 +350,9 @@ block_list:
 		dom->text = $2;
 		$$ = new_dom_list(dom);
 	}
-	
+	| BLANK_LINE block_list {
+		$$ = $2;
+	}
 
 document: block_list {
     dom_root = $$ = new_dom(Document, $1);
@@ -310,6 +403,15 @@ void dom_display(DOM* dom, int depth) {
     if (dom->url != NULL) {
         printf(" (%s)", dom->url);
     }
+	if (dom->svg_coords != NULL) {
+		printf(" [");
+		SvgCoordList* curr = dom->svg_coords;
+		while (curr != NULL) {
+			printf("(%d, %d) ", curr->coord->x, curr->coord->y);
+			curr = curr->next;
+		}
+		printf("]");
+	}
     printf("\n");
 
     SvgList* svg_child = dom->svg_children;

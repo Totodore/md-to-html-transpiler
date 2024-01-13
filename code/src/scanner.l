@@ -407,24 +407,31 @@ xsvg_end "\`\`\`"
 
 <SVG_MODE>^"line " {
     print_token("LINE");
+	return LINE;
 }
 <SVG_MODE>^"polyline " {
     print_token("POLYLINE");
+	return POLYLINE;
 }
 <SVG_MODE>^"polygon " {
     print_token("POLYGON");
+	return POLYGON;
 }
 <SVG_MODE>^"circle " {
     print_token("CIRCLE");
+	return CIRCLE;
 }
 <SVG_MODE>^"ellipse " {
     print_token("ELLIPSE");
+	return ELLIPSE;
 }
 <SVG_MODE>^"rect " {
     print_token("RECT");
+	return RECT;
 }
-<SVG_MODE>^"xsvg_text " {
+<SVG_MODE>^"text " {
     print_token("XSVG_TEXT");
+	return XSVG_TEXT;
 }
 <SVG_MODE>{xsvg_end} {
     END_MODE; // It will go back to the previous mode
@@ -434,12 +441,14 @@ xsvg_end "\`\`\`"
 	return XSVG_END;
 };
 <SVG_MODE>{xsvg_attribute} {
-    print_token("STR");
+    print_token_with_str("XSVG_ATTR", yytext);
+	yylval.text = str_copy(yytext);
+	return XSVG_ATTR;
 }
-<SVG_MODE>({newline}|,|\n|[ ]) {
-
-}
-
+<SVG_MODE>[[:blank:]]*{newline} {
+    print_token("NEWLINE"); // It will print the token NEWLINE
+    return NEWLINE;
+};
 %%
 
 /*********** C CODE (YOU DO NOT HAVE TO MODIFY IT) ******************/
