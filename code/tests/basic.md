@@ -6,10 +6,16 @@
 ###### H6
 > Some quote text
 
-**Bold**
+some **Bold** text
 
 *Italic*
  
 ~~Strikethrough~~
  
+---
+
 __Underlined__
+
+
+---
+

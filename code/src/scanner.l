@@ -95,7 +95,7 @@ escapable_char "\\"
 list_item "[[:blank:]]*\\*"
 link "(\<.+\>)|(\[.+\]\(.+\))"
 image "\!\[.+\]\(.+\)"
-hr "---"\n
+hr "---\n"
 inline_code \`
 block_code "\`\`\`"
 line "line"

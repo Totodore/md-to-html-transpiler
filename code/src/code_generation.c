@@ -156,6 +156,11 @@ string code_generation_from_dom(DOM* dom, unsigned int indent) {
 
             return html;
         }
+        case HRule: {
+            string html = STR("<hr>");
+
+            return html;
+        }
         case Bold: {
             string html = STR("<b>");
 
