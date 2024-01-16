@@ -297,7 +297,6 @@ block_list:
 	XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END block_list {
 		SvgCoordList* coord_list = new_svg_coord_list($2);
 		coord_list->next = new_svg_coord_list($4);
-		SvgInst* coord = new_svg_inst(Coords, coord_list);
 
 		DOM* dom = new_dom(SVG, NULL);
 		dom->svg_children = $5;
@@ -309,7 +308,6 @@ block_list:
 	| XSVG_BEGIN svg_coord COMMA svg_coord svg_list XSVG_END {
 		SvgCoordList* coord_list = new_svg_coord_list($2);
 		coord_list->next = new_svg_coord_list($4);
-		SvgInst* coord = new_svg_inst(Coords, coord_list);
 
 		DOM* dom = new_dom(SVG, NULL);
 		dom->svg_children = $5;
