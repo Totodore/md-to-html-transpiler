@@ -104,8 +104,8 @@ void append_svg_element(string buffer, SvgInst *element)
 		append_int_prop(buffer, "x2", coord->x);
 		append_int_prop(buffer, "y2", coord->y);
 
-		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+		if (element->color_fill != NULL)
+			append_prop(buffer, "stroke", element->color_fill);
 
 		APPEND_ARR(buffer, "/>");
 		break;
@@ -117,8 +117,10 @@ void append_svg_element(string buffer, SvgInst *element)
 		append_coord_list(buffer, element->coords, " ", ",");
 		APPEND_ARR(buffer, "\"");
 
-		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+		if (element->color_fill != NULL)
+			append_prop(buffer, "stroke", element->color_fill);
+
+		append_prop(buffer, "fill", "none");
 
 		APPEND_ARR(buffer, "/>");
 		break;
@@ -185,10 +187,10 @@ void append_svg_element(string buffer, SvgInst *element)
 		APPEND_ARR(buffer, "\"");
 
 		if (element->color_stroke != NULL)
-			append_prop(buffer, element->color_stroke, "stroke");
+			append_prop(buffer, "stroke", element->color_stroke);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, element->color_stroke, "fill");
+			append_prop(buffer, "fill", element->color_stroke);
 
 		APPEND_ARR(buffer, "/>");
 		break;
