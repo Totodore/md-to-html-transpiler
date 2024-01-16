@@ -88,7 +88,7 @@ term
 
 ~~The world is flat.~~
 
-```xsvg:123,456,789,012
+```xsvg:0,0,100,100
 line 0,0 10,0 red
 
 line 10,0 10,10 green
@@ -104,6 +104,6 @@ ellipse 60,5 5 10 blue red
 
 rect 70,0 10 10 blue red
 
-text 0,50 "My text" middle red
+text 0,50 "My Super text" middle red
 
 ```
