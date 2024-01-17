@@ -125,60 +125,48 @@ xsvg_end "\`\`\`"
 %%
 
 <INITIAL>[[:blank:]]*{newline} {
-    print_token("NEWLINE"); // It will print the token NEWLINE
     return NEWLINE;
 };
 
 ([[:blank:]]*{newline}){2} {
-    print_token("BLANK_LINE");
     return BLANK_LINE;
 };
 
 ^{h1} {
-    print_token("H1");
     return H1;
 }
 
 ^{h2} {
-    print_token("H2");
     return H2;
 }
 
 ^{h3} {
-    print_token("H3");
     return H3;
 }
 
 ^{h4} {
-    print_token("H4");
     return H4;
 }
 
 ^{h5} {
-    print_token("H5");
     return H5;
 }
 
 ^{h6} {
-    print_token("H6");
     return H6;
 }
 
 ^{hr} {
-    print_token("HR");
-	return HR;
+    return HR;
 }
 
 <INITIAL>{italic} {
     BEGIN_MODE(ITALIC_MODE);
-    print_token("ITALIC");
     return ITALIC;
 };
 
 <ITALIC_MODE>{italic} {
     END_MODE;
-
-    print_token("ITALIC");
     return ITALIC;
 };
 
@@ -191,14 +179,12 @@ xsvg_end "\`\`\`"
 <INITIAL>{bold}	{
     BEGIN_MODE(BOLD_MODE); // You can switch to another mode
 
-    print_token("BOLD");
     return BOLD;
 };
 
 <BOLD_MODE>{bold} {
     END_MODE; // It will go back to the previous mode
 
-    print_token("BOLD");
     return BOLD;
 };
 
@@ -214,14 +200,12 @@ xsvg_end "\`\`\`"
 
 <INITIAL>{underline} {
     BEGIN_MODE(UNDERLINE_MODE);
-    print_token("UNDERLINE");
     return UNDERLINE;
 };
 
 <UNDERLINE_MODE>{underline} {
     END_MODE;
 
-    print_token("UNDERLINE");
     return UNDERLINE;
 };
 
@@ -233,13 +217,11 @@ xsvg_end "\`\`\`"
 
 <INITIAL>{strikethrough} {
     BEGIN_MODE(STRIKETHROUGH_MODE);
-    print_token("STRIKETHROUGH");
     return STRIKETHROUGH;
 };
 
 <STRIKETHROUGH_MODE>{strikethrough} {
     END_MODE;
-    print_token("STRIKETHROUGH");
     return STRIKETHROUGH;
 };
 
@@ -250,21 +232,17 @@ xsvg_end "\`\`\`"
 };
 
 <INITIAL>{quote}[[:blank:]]* {
-    print_token("QUOTE");
 	return QUOTE;
 };
 
 <INITIAL>{list_item} {
-    print_token("LIST_ITEM");
 };
 
 <INITIAL>{hr} {
-    print_token("HR");
 };
 
 <INITIAL>{inline_code}. {
     BEGIN_MODE(INLINE_CODE_MODE);
-    print_token("INLINE_CODE");
 	strbufapp(*(yytext + 1)); // buf again the char captured by the . (dot)
 	return INLINE_CODE;
 };
@@ -272,7 +250,6 @@ xsvg_end "\`\`\`"
 <INLINE_CODE_MODE>{inline_code} {
     END_MODE;
 
-    print_token("INLINE_CODE");
 	return INLINE_CODE;
 };
 
@@ -284,7 +261,6 @@ xsvg_end "\`\`\`"
 
 <INITIAL>{block_code}{newline} {
     BEGIN_MODE(BLOCK_CODE_MODE);
-    print_token("BLOCK_CODE");
 	return BLOCK_CODE;
 };
 
@@ -297,7 +273,6 @@ xsvg_end "\`\`\`"
 
     char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
     char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
-    print_token_with_str("TEXT_CODE", copy); // Will print the token TEXT along with the string
     yylval.text = copy;
 
 	return TEXT;
@@ -312,7 +287,6 @@ xsvg_end "\`\`\`"
 
     char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
     char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
-    print_token_with_str("TEXT_CODE", copy); // Will print the token TEXT along with the string
     yylval.text = copy;
 
 	return TEXT;
@@ -321,31 +295,25 @@ xsvg_end "\`\`\`"
 <INITIAL,TEXT_MODE>{exclam}{lbracket} {
     BEGIN_MODE(IMAGE_MODE); // You can switch to another mode
 
-    print_token("EXCLAM LBRACKET");
 	return EXCLAM_LBRACKET;
 };
 
 <INITIAL,TEXT_MODE>{lbracket}. {
     BEGIN_MODE(LINK_MODE); // You can switch to another mode
 
-    print_token("LBRACKET");
     strbufapp(*(yytext + 1)); // buf again the char captured by the . (dot)
 	return LBRACKET;
 };
 
 <LINK_MODE,IMAGE_MODE>{rbracket} {
-	print_token("RBRACKET");
 	return RBRACKET;
 }
 <LINK_MODE,IMAGE_MODE>{lparen} {
-    print_token("LPARENT");
 	return LPAREN;
 };
 
 <LINK_MODE,IMAGE_MODE>{rparen} {
     END_MODE; // It will go back to the previous mode
-
-    print_token("RPARENT");
 	return RPAREN;
 };
 
@@ -365,7 +333,6 @@ xsvg_end "\`\`\`"
 
     char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
     char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
-    print_token_with_str("TEXT", copy); // Will print the token TEXT along with the string
     yylval.text = copy;
     return TEXT;
 };
@@ -376,7 +343,6 @@ xsvg_end "\`\`\`"
 
     char* txt = strbufclr();
     char *copy = str_copy(txt);
-    print_token_with_str("TEXT", copy);
 
     yylval.text = copy;
     return TEXT;
@@ -389,64 +355,49 @@ xsvg_end "\`\`\`"
 <INITIAL>^{xsvg_begin} {
     BEGIN_MODE(SVG_MODE);
 
-	print_token("XSVG_BEGIN");
-
 	return XSVG_BEGIN;
 }
 
 <SVG_MODE>{number} {
-	print_token("NUMBER");
 	yylval.number = atoi(yytext);
 	return NUMBER;
 }
 
 <SVG_MODE>{svg_comma} {
-	print_token("COMMA");
 	return COMMA;
 }
 
 <SVG_MODE>^"line " {
-    print_token("LINE");
 	return LINE;
 }
 <SVG_MODE>^"polyline " {
-    print_token("POLYLINE");
 	return POLYLINE;
 }
 <SVG_MODE>^"polygon " {
-    print_token("POLYGON");
 	return POLYGON;
 }
 <SVG_MODE>^"circle " {
-    print_token("CIRCLE");
 	return CIRCLE;
 }
 <SVG_MODE>^"ellipse " {
-    print_token("ELLIPSE");
 	return ELLIPSE;
 }
 <SVG_MODE>^"rect " {
-    print_token("RECT");
 	return RECT;
 }
 <SVG_MODE>^"text " {
-    print_token("XSVG_TEXT");
 	return XSVG_TEXT;
 }
 <SVG_MODE>{xsvg_end} {
     END_MODE; // It will go back to the previous mode
 
-    print_token("XSVG_END");
-
 	return XSVG_END;
 };
 <SVG_MODE>{xsvg_attribute} {
-    print_token_with_str("XSVG_ATTR", yytext);
 	yylval.text = str_copy(yytext);
 	return XSVG_ATTR;
 }
 <SVG_MODE>[[:blank:]]*{newline} {
-    print_token("NEWLINE"); // It will print the token NEWLINE
     return NEWLINE;
 };
 %%
