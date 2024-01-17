@@ -435,6 +435,54 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 
 		return html;
 	}
+	case InlineCode:
+	{
+		string html = STR("");
+		add_indentation(html, indent);
+
+		APPEND_ARR(html, "<code>");
+		APPEND_ARR(html, dom->text);
+		APPEND_ARR(html, "</code>\n");
+
+		return html;
+	}
+	case BlockCode:
+	{
+		string html = STR("");
+		add_indentation(html, indent);
+
+		APPEND_ARR(html, "<pre>");
+		APPEND_ARR(html, dom->text);
+		APPEND_ARR(html, "</pre>\n");
+
+		return html;
+	}
+	case Link:
+	{
+		string html = STR("");
+		add_indentation(html, indent);
+
+		APPEND_ARR(html, "<a href=\"");
+		APPEND_ARR(html, dom->url);
+		APPEND_ARR(html, "\">");
+		APPEND_ARR(html, dom->text);
+		APPEND_ARR(html, "</a>\n");
+
+		return html;
+	}
+	case Image:
+	{
+		string html = STR("");
+		add_indentation(html, indent);
+
+		APPEND_ARR(html, "<img src=\"");
+		APPEND_ARR(html, dom->url);
+		APPEND_ARR(html, "\" alt=\"");
+		APPEND_ARR(html, dom->text);
+		APPEND_ARR(html, "\">\n");
+
+		return html;
+	}
 	case SVG:
 	{
 		string html = STR("");
