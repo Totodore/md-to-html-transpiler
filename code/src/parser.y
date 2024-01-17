@@ -83,7 +83,7 @@ DOM* dom_root = NULL;
 
 %token NEWLINE BLANK_LINE
 %token BOLD ITALIC UNDERLINE STRIKETHROUGH
-%token H1 H2 H3 H4 H5 H6 HR
+%token H1 H2 H3 H4 H5 H6 HRULE
 %token <text> TEXT XSVG_ATTR
 %token <number> NUMBER
 %token LPAREN RPAREN LBRACKET RBRACKET EXCLAM_LBRACKET
@@ -262,7 +262,10 @@ paragraph:
     }
     | line { $$ = $1; };
 block:
-    H1 TEXT {
+    HRULE {
+        $$ = new_dom(HRule, NULL);
+    }
+    | H1 TEXT {
         $$ = new_dom(Header1, NULL);
         $$->text = $2;
     }
@@ -341,11 +344,6 @@ block_list:
 	}
 	| BLANK_LINE block_list {
 		$$ = $2;
-	}
-	| HR NEWLINE block_list {
-		DOM* dom = new_dom(HRule, NULL);
-		$$ = new_dom_list(dom);
-		$$->next = $3;
 	}
 	| BLOCK_CODE TEXT BLANK_LINE block_list {
 		DOM* dom = new_dom(BlockCode, NULL);
