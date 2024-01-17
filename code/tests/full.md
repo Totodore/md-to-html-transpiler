@@ -26,12 +26,6 @@ These are the elements outlined in John Gruber’s original design document. All
 
 > blockquote
 
-### Ordered List
-
-1. First item
-2. Second item
-3. Third item
-
 ### Unordered List
 
 - First item
@@ -57,13 +51,6 @@ These are the elements outlined in John Gruber’s original design document. All
 ## Extended Syntax
 
 These elements extend the basic syntax by adding additional features. Not all Markdown applications support these elements.
-
-### Table
-
-| Syntax | Description |
-| ----------- | ----------- |
-| Header | Title |
-| Paragraph | Text |
 
 ### Fenced Code Block
 

@@ -22,73 +22,85 @@ const char HTML_FOOTER[] = "  </article>\n"
 						   "  </body>\n"
 						   "</html>";
 
-void add_indentation(string str, unsigned int indent_lvl)
+string add_indentation(string str, unsigned int indent_lvl)
 {
 	for (int t = 0; t < indent_lvl; t++)
 	{
 		APPEND_ARR(str, "  ");
 	}
+	return str;
 }
+#define ADD_INDENTATION(str, indent_lvl) str = add_indentation(str, indent_lvl)
 
 /**
  * @brief Append an integer to a string buffer.
  */
-void append_int(string buffer, int value)
+string append_int(string buffer, int value)
 {
 	int len = value != 0 ? log10(abs(value)) + 1 : 1;
 	char *buf = malloc(len + 1);
 	sprintf(buf, "%d", value);
 	APPEND_ARR(buffer, buf);
-	free(buf);
+	return buffer;
 }
+#define APPEND_INT(buffer, value) buffer = append_int(buffer, value)
 
 /**
  * @brief Append a coordinate to a buffer separated by a delimiter.
  */
-void append_coord(string buffer, SvgCoord *coord, const char *delim)
+string append_coord(string buffer, SvgCoord *coord, const char *delim)
 {
-	append_int(buffer, coord->x);
+	APPEND_INT(buffer, coord->x);
 	APPEND_ARR(buffer, delim);
-	append_int(buffer, coord->y);
+	APPEND_INT(buffer, coord->y);
 }
+#define APPEND_COORD(buffer, coord, delim) buffer = append_coord(buffer, coord, delim)
+
 /**
  * @brief Append a list of coordinates to a buffer separated by a delimiter.
  */
-void append_coord_list(string buffer, SvgCoordList *coord_list, const char *delim, const char *coord_delim)
+string append_coord_list(string buffer, SvgCoordList *coord_list, const char *delim, const char *coord_delim)
 {
 	while (coord_list != NULL)
 	{
-		append_coord(buffer, coord_list->coord, coord_delim);
+		APPEND_COORD(buffer, coord_list->coord, coord_delim);
 
 		coord_list = coord_list->next;
 		if (coord_list != NULL)
 			APPEND_ARR(buffer, delim);
 	}
+	return buffer;
 }
+#define APPEND_COORD_LIST(buffer, coord_list, delim, coord_delim) buffer = append_coord_list(buffer, coord_list, delim, coord_delim)
+
 /**
  * @brief Append a property in the form ` prop="value"` to a buffer.
  */
-void append_prop(string buffer, const char *prop, char *value)
+string append_prop(string buffer, const char *prop, char *value)
 {
 	APPEND_ARR(buffer, " ");
 	APPEND_ARR(buffer, prop);
 	APPEND_ARR(buffer, "=\"");
 	APPEND_ARR(buffer, value);
 	APPEND_ARR(buffer, "\"");
+	return buffer;
 }
+#define APPEND_PROP(buffer, prop, value) buffer = append_prop(buffer, prop, value)
 
 /**
  * @brief Append a property in the form ` prop="value"` to a buffer.
  */
-void append_int_prop(string buffer, const char *prop, int value)
+string append_int_prop(string buffer, const char *prop, int value)
 {
 	APPEND_ARR(buffer, " ");
 	APPEND_ARR(buffer, prop);
 	APPEND_ARR(buffer, "=\"");
-	append_int(buffer, value);
+	APPEND_INT(buffer, value);
 	APPEND_ARR(buffer, "\"");
+	return buffer;
 }
-void append_svg_element(string buffer, SvgInst *element)
+#define APPEND_INT_PROP(buffer, prop, value) buffer = append_int_prop(buffer, prop, value)
+string append_svg_element(string buffer, SvgInst *element)
 {
 	switch (element->kind)
 	{
@@ -97,128 +109,133 @@ void append_svg_element(string buffer, SvgInst *element)
 		APPEND_ARR(buffer, "<line");
 		SvgCoord *coord = element->coords->coord;
 
-		append_int_prop(buffer, "x1", coord->x);
-		append_int_prop(buffer, "y1", coord->y);
+		APPEND_INT_PROP(buffer, "x1", coord->x);
+		APPEND_INT_PROP(buffer, "y1", coord->y);
 
 		coord = element->coords->next->coord;
-		append_int_prop(buffer, "x2", coord->x);
-		append_int_prop(buffer, "y2", coord->y);
+		APPEND_INT_PROP(buffer, "x2", coord->x);
+		APPEND_INT_PROP(buffer, "y2", coord->y);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "stroke", element->color_fill);
+			APPEND_PROP(buffer, "stroke", element->color_fill);
 
 		APPEND_ARR(buffer, "/>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	case Polyline:
 	{
 		APPEND_ARR(buffer, "<polyline points=\"");
 
-		append_coord_list(buffer, element->coords, " ", ",");
+		APPEND_COORD_LIST(buffer, element->coords, " ", ",");
 		APPEND_ARR(buffer, "\"");
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "stroke", element->color_fill);
+			APPEND_PROP(buffer, "stroke", element->color_fill);
 
-		append_prop(buffer, "fill", "none");
+		APPEND_PROP(buffer, "fill", "none");
 
 		APPEND_ARR(buffer, "/>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	case Polygon:
 	{
 		APPEND_ARR(buffer, "<polygon points=\"");
-		append_coord_list(buffer, element->coords, " ", ",");
+		APPEND_COORD_LIST(buffer, element->coords, " ", ",");
 		APPEND_ARR(buffer, "\"");
 
 		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+			APPEND_PROP(buffer, "stroke", element->color_stroke);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "fill", element->color_fill);
+			APPEND_PROP(buffer, "fill", element->color_fill);
 
 		APPEND_ARR(buffer, "/>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	case Circle:
 	{
 		APPEND_ARR(buffer, "<circle");
 		SvgCoord *coord = element->coords->coord;
-		append_int_prop(buffer, "cx", coord->x);
-		append_int_prop(buffer, "cy", coord->y);
-		append_int_prop(buffer, "r", element->width);
+		APPEND_INT_PROP(buffer, "cx", coord->x);
+		APPEND_INT_PROP(buffer, "cy", coord->y);
+		APPEND_INT_PROP(buffer, "r", element->width);
 
 		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+			APPEND_PROP(buffer, "stroke", element->color_stroke);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "fill", element->color_fill);
+			APPEND_PROP(buffer, "fill", element->color_fill);
 
 		APPEND_ARR(buffer, "/>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	case Ellipse:
 	{
 		APPEND_ARR(buffer, "<ellipse");
 		SvgCoord *coord = element->coords->coord;
-		append_int_prop(buffer, "cx", coord->x);
-		append_int_prop(buffer, "cy", coord->y);
-		append_int_prop(buffer, "rx", element->width);
-		append_int_prop(buffer, "ry", element->height);
+		APPEND_INT_PROP(buffer, "cx", coord->x);
+		APPEND_INT_PROP(buffer, "cy", coord->y);
+		APPEND_INT_PROP(buffer, "rx", element->width);
+		APPEND_INT_PROP(buffer, "ry", element->height);
 
 		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+			APPEND_PROP(buffer, "stroke", element->color_stroke);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "fill", element->color_fill);
+			APPEND_PROP(buffer, "fill", element->color_fill);
 
 		APPEND_ARR(buffer, "/>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	case Rect:
 	{
 		APPEND_ARR(buffer, "<rect");
 		SvgCoord *coord = element->coords->coord;
-		append_int_prop(buffer, "x", coord->x);
-		append_int_prop(buffer, "y", coord->y);
-		append_int_prop(buffer, "width", element->width);
-		append_int_prop(buffer, "height", element->height);
+		APPEND_INT_PROP(buffer, "x", coord->x);
+		APPEND_INT_PROP(buffer, "y", coord->y);
+		APPEND_INT_PROP(buffer, "width", element->width);
+		APPEND_INT_PROP(buffer, "height", element->height);
 
 		APPEND_ARR(buffer, "\"");
 
 		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+			APPEND_PROP(buffer, "stroke", element->color_stroke);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "fill", element->color_stroke);
+			APPEND_PROP(buffer, "fill", element->color_stroke);
 
 		APPEND_ARR(buffer, "/>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	case Text:
 	{
 		APPEND_ARR(buffer, "<text");
 		SvgCoord *coord = element->coords->coord;
-		append_int_prop(buffer, "x", coord->x);
-		append_int_prop(buffer, "y", coord->y);
+		APPEND_INT_PROP(buffer, "x", coord->x);
+		APPEND_INT_PROP(buffer, "y", coord->y);
 
 		if (element->anchor != NULL)
-			append_prop(buffer, "text-anchor", element->anchor);
+			APPEND_PROP(buffer, "text-anchor", element->anchor);
 
 		if (element->color_stroke != NULL)
-			append_prop(buffer, "stroke", element->color_stroke);
+			APPEND_PROP(buffer, "stroke", element->color_stroke);
 
 		if (element->color_fill != NULL)
-			append_prop(buffer, "fill", element->color_fill);
+			APPEND_PROP(buffer, "fill", element->color_fill);
 
 		APPEND_ARR(buffer, ">");
 		APPEND_ARR(buffer, element->text);
 		APPEND_ARR(buffer, "</text>");
-		break;
+		APPEND_ARR(buffer, "\n");
+		return buffer;
 	}
 	}
-
-	APPEND_ARR(buffer, "\n");
 }
 
 string code_generation_from_dom(DOM *dom, unsigned int indent)
@@ -232,7 +249,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Document:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		DomList *child = dom->children;
 
@@ -250,7 +267,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Header1:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<h1>");
 		APPEND_ARR(html, dom->text);
@@ -261,7 +278,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Header2:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<h2>");
 		APPEND_ARR(html, dom->text);
@@ -272,7 +289,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Header3:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<h3>");
 		APPEND_ARR(html, dom->text);
@@ -283,7 +300,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Header4:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<h4>");
 		APPEND_ARR(html, dom->text);
@@ -294,7 +311,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Header5:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<h5>");
 		APPEND_ARR(html, dom->text);
@@ -305,7 +322,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Header6:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<h6>");
 		APPEND_ARR(html, dom->text);
@@ -316,7 +333,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Quote:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<blockquote>");
 		APPEND_ARR(html, dom->text);
@@ -327,7 +344,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Paragraph:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<p>\n");
 
@@ -346,7 +363,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 			}
 			else
 			{
-				add_indentation(html, indent + 1);
+				ADD_INDENTATION(html, indent + 1);
 			}
 
 			string content = code_generation_from_dom(child->dom, indent + 1); // Indentation not relevant here
@@ -358,7 +375,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 		}
 
 		APPEND_ARR(html, "\n");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 		APPEND_ARR(html, "</p>\n");
 
 		return html;
@@ -438,7 +455,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case InlineCode:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<code>");
 		APPEND_ARR(html, dom->text);
@@ -449,7 +466,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case BlockCode:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<pre>");
 		APPEND_ARR(html, dom->text);
@@ -460,7 +477,7 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Link:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
 		APPEND_ARR(html, "<a href=\"");
 		APPEND_ARR(html, dom->url);
@@ -473,14 +490,12 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 	case Image:
 	{
 		string html = STR("");
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 
-		APPEND_ARR(html, "<img src=\"");
-		APPEND_ARR(html, dom->url);
-		APPEND_ARR(html, "\" alt=\"");
-		APPEND_ARR(html, dom->text);
+		APPEND_ARR(html, "<img");
+		APPEND_PROP(html, "src", dom->url);
+		APPEND_PROP(html, "alt", dom->text);
 		APPEND_ARR(html, "\">\n");
-
 		return html;
 	}
 	case SVG:
@@ -489,22 +504,22 @@ string code_generation_from_dom(DOM *dom, unsigned int indent)
 		if (dom->svg_coords == NULL || dom->svg_coords->next == NULL)
 			return html;
 
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 		APPEND_ARR(html, "<svg viewBox=\"");
 		// Add viewbox coordinates
-		append_coord_list(html, dom->svg_coords, " ", " ");
+		APPEND_COORD_LIST(html, dom->svg_coords, " ", " ");
 
 		APPEND_ARR(html, "\">\n");
 
 		SvgList *child = dom->svg_children;
 		while (child != NULL)
 		{
-			add_indentation(html, indent + 1);
-			append_svg_element(html, child->svg);
+			ADD_INDENTATION(html, indent + 1);
+			html = append_svg_element(html, child->svg);
 			child = child->next;
 		}
 
-		add_indentation(html, indent);
+		ADD_INDENTATION(html, indent);
 		APPEND_ARR(html, "</svg>\n");
 
 		return html;
