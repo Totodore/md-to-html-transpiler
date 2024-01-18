@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "ast.h"
+#include "y.tab.h"
 
 /* BEGIN MODE SYSTEM DECLARATION */
 int mode_caller[8];
@@ -56,7 +58,7 @@ LPAREN
 RPAREN
 LBRACKET
 RBRACKET
-HR
+HRULE
 INLINE_CODE
 BLOCK_CODE
 XSVG_BEGIN
@@ -93,7 +95,7 @@ escapable_char "\\"
 list_item "[[:blank:]]*\\*"
 link "(\<.+\>)|(\[.+\]\(.+\))"
 image "\!\[.+\]\(.+\)"
-hr "---"\n
+hrule "---"[-]*
 inline_code \`
 block_code "\`\`\`"
 line "line"
@@ -123,50 +125,49 @@ xsvg_end "\`\`\`"
 %%
 
 <INITIAL>[[:blank:]]*{newline} {
-    print_token("NEWLINE"); // It will print the token NEWLINE
+    return NEWLINE;
 };
 
 ([[:blank:]]*{newline}){2} {
-    print_token("BLANK_LINE");
+    return BLANK_LINE;
 };
 
 ^{h1} {
-    print_token("H1");
+    return H1;
 }
 
 ^{h2} {
-    print_token("H2");
+    return H2;
 }
 
 ^{h3} {
-    print_token("H3");
+    return H3;
 }
 
 ^{h4} {
-    print_token("H4");
+    return H4;
 }
 
 ^{h5} {
-    print_token("H5");
+    return H5;
 }
 
 ^{h6} {
-    print_token("H6");
+    return H6;
 }
 
-^{hr} {
-    print_token("HR");
-}
+^{hrule} {
+    return HRULE;
+};
 
 <INITIAL>{italic} {
     BEGIN_MODE(ITALIC_MODE);
-    print_token("ITALIC");
+    return ITALIC;
 };
 
 <ITALIC_MODE>{italic} {
     END_MODE;
-
-    print_token("ITALIC");
+    return ITALIC;
 };
 
 <INITIAL,ITALIC_MODE>. {
@@ -178,13 +179,13 @@ xsvg_end "\`\`\`"
 <INITIAL>{bold}	{
     BEGIN_MODE(BOLD_MODE); // You can switch to another mode
 
-    print_token("BOLD");
+    return BOLD;
 };
 
 <BOLD_MODE>{bold} {
     END_MODE; // It will go back to the previous mode
 
-    print_token("BOLD");
+    return BOLD;
 };
 
 <INITIAL,BOLD_MODE>. {
@@ -199,13 +200,13 @@ xsvg_end "\`\`\`"
 
 <INITIAL>{underline} {
     BEGIN_MODE(UNDERLINE_MODE);
-    print_token("UNDERLINE");
+    return UNDERLINE;
 };
 
 <UNDERLINE_MODE>{underline} {
     END_MODE;
 
-    print_token("UNDERLINE");
+    return UNDERLINE;
 };
 
 <INITIAL,UNDERLINE_MODE>. {
@@ -216,13 +217,12 @@ xsvg_end "\`\`\`"
 
 <INITIAL>{strikethrough} {
     BEGIN_MODE(STRIKETHROUGH_MODE);
-    print_token("STRIKETHROUGH");
+    return STRIKETHROUGH;
 };
 
 <STRIKETHROUGH_MODE>{strikethrough} {
     END_MODE;
-
-    print_token("STRIKETHROUGH");
+    return STRIKETHROUGH;
 };
 
 <INITIAL,STRIKETHROUGH_MODE>. {
@@ -232,102 +232,96 @@ xsvg_end "\`\`\`"
 };
 
 <INITIAL>{quote}[[:blank:]]* {
-    print_token("QUOTE");
+	return QUOTE;
 };
 
 <INITIAL>{list_item} {
-    print_token("LIST_ITEM");
-};
-
-<INITIAL>{link} {
-    print_token("LINK");
-};
-
-<INITIAL>{image} {
-    print_token("IMAGE");
-};
-
-<INITIAL>{hr} {
-    print_token("HR");
 };
 
 <INITIAL>{inline_code}. {
     BEGIN_MODE(INLINE_CODE_MODE);
-    print_token("INLINE_CODE");
+	strbufapp(*(yytext + 1)); // buf again the char captured by the . (dot)
+	return INLINE_CODE;
 };
 
 <INLINE_CODE_MODE>{inline_code} {
     END_MODE;
 
-    print_token("INLINE_CODE");
+	return INLINE_CODE;
 };
 
 <INITIAL,INLINE_CODE_MODE>. {
     BEGIN_MODE(TEXT_MODE);
 
     strbufapp(*yytext);
-
 };
 
-<INITIAL>{block_code} {
+<INITIAL>{block_code}{newline} {
     BEGIN_MODE(BLOCK_CODE_MODE);
-    print_token("BLOCK_CODE");
+	return BLOCK_CODE;
+};
+
+<BLOCK_CODE_MODE>. {
+	strbufapp(*yytext);
+};
+
+<BLOCK_CODE_MODE>{newline}{block_code} {
+	END_MODE;
+
+    char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
+    char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
+    yylval.text = copy;
+
+	return TEXT;
 };
 
 <BLOCK_CODE_MODE>{newline} {
-    print_token("NEWLINE");
+	strbufapp(*yytext);
 };
 
-<BLOCK_CODE_MODE>{block_code} {
-    END_MODE;
+<BLOCK_CODE_MODE><<EOF>> {
+	END_MODE;
 
-    print_token("BLOCK_CODE");
+    char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
+    char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
+    yylval.text = copy;
+
+	return TEXT;
 };
 
-<INITIAL,BLOCK_CODE_MODE>. {
-    BEGIN_MODE(TEXT_MODE);
-
-    strbufapp(*yytext);
-};
-
-<INITIAL>^{exclam}{lbracket} {
+<INITIAL,TEXT_MODE>{exclam}{lbracket} {
     BEGIN_MODE(IMAGE_MODE); // You can switch to another mode
 
-    print_token("EXCLAM LBRACKET");
+	return EXCLAM_LBRACKET;
 };
 
-<IMAGE_MODE>{rbracket}{lparen}[^\n ]+{rparen} {
-    END_MODE; // It will go back to the previous mode
-
-    print_token("RBRACKET LPAREN TEXT RPAREN");
-};
-
-<INITIAL,IMAGE_MODE>. {
-    BEGIN_MODE(TEXT_MODE);
-
-    strbufapp(*yytext);
-};
-
-<INITIAL>[[:blank:]]*{lbracket}. {
+<INITIAL,TEXT_MODE>{lbracket}. {
     BEGIN_MODE(LINK_MODE); // You can switch to another mode
 
-    print_token("LBRACKET");
+    strbufapp(*(yytext + 1)); // buf again the char captured by the . (dot)
+	return LBRACKET;
 };
 
-<LINK_MODE>{rbracket}{lparen}[^\n ]+{rparen} {
+<LINK_MODE,IMAGE_MODE>{rbracket} {
+	return RBRACKET;
+}
+<LINK_MODE,IMAGE_MODE>{lparen} {
+	return LPAREN;
+};
+
+<LINK_MODE,IMAGE_MODE>{rparen} {
     END_MODE; // It will go back to the previous mode
-
-    print_token("RBRACKET LPAREN TEXT RPAREN");
+	return RPAREN;
 };
 
-<INITIAL,LINK_MODE>. {
+<INITIAL,LINK_MODE,IMAGE_MODE>. {
     BEGIN_MODE(TEXT_MODE);
 
     strbufapp(*yytext);
 };
 
 
-<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|{hr}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{number}|{exclam}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end})(.|\n)* {
+<TEXT_MODE>({newline}|{inline_code}|{bold}|^{h1}|^{h2}|^{h3}|^{h4}|^{h5}|^{h6}|^{hrule}|{italic}|{underline}|{strikethrough}|{list_item}|{link}|{image}|{block_code}|{lparen}|{rparen}|{rbracket}|{lbracket}|{xsvg_begin}|{xsvg_end}|{exclam}{lbracket})(.|\n)* {
     END_MODE;
 
     // We give the full capture to Flex to be analyzed again
@@ -336,7 +330,8 @@ xsvg_end "\`\`\`"
 
     char* txt = strbufclr(); // We retrieve the global string made with strbufapp()
     char *copy = str_copy(txt); // We have to make a copy of the global string or the yytext when needed
-    print_token_with_str("TEXT", copy); // Will print the token TEXT along with the string
+    yylval.text = copy;
+    return TEXT;
 };
 
 <TEXT_MODE><<EOF>> {
@@ -345,7 +340,9 @@ xsvg_end "\`\`\`"
 
     char* txt = strbufclr();
     char *copy = str_copy(txt);
-    print_token_with_str("TEXT", copy);
+
+    yylval.text = copy;
+    return TEXT;
 };
 
 <TEXT_MODE>. {
@@ -355,46 +352,51 @@ xsvg_end "\`\`\`"
 <INITIAL>^{xsvg_begin} {
     BEGIN_MODE(SVG_MODE);
 
-	print_token("XSVG_BEGIN");
+	return XSVG_BEGIN;
 }
 
-<SVG_MODE>{svg_coord} {
-    print_token("NUMBER COMMA NUMBER");
-};
+<SVG_MODE>{number} {
+	yylval.number = atoi(yytext);
+	return NUMBER;
+}
+
+<SVG_MODE>{svg_comma} {
+	return COMMA;
+}
 
 <SVG_MODE>^"line " {
-    print_token("LINE");
+	return LINE;
 }
 <SVG_MODE>^"polyline " {
-    print_token("POLYLINE");
+	return POLYLINE;
 }
 <SVG_MODE>^"polygon " {
-    print_token("POLYGON");
+	return POLYGON;
 }
 <SVG_MODE>^"circle " {
-    print_token("CIRCLE");
+	return CIRCLE;
 }
 <SVG_MODE>^"ellipse " {
-    print_token("ELLIPSE");
+	return ELLIPSE;
 }
 <SVG_MODE>^"rect " {
-    print_token("RECT");
+	return RECT;
 }
-<SVG_MODE>^"xsvg_text " {
-    print_token("XSVG_TEXT");
+<SVG_MODE>^"text " {
+	return XSVG_TEXT;
 }
 <SVG_MODE>{xsvg_end} {
     END_MODE; // It will go back to the previous mode
 
-    print_token("XSVG_END");
+	return XSVG_END;
 };
 <SVG_MODE>{xsvg_attribute} {
-    print_token("STR");
+	yylval.text = str_copy(yytext);
+	return XSVG_ATTR;
 }
-<SVG_MODE>({newline}|,|\n|[ ]) {
-
-}
-
+<SVG_MODE>[[:blank:]]*{newline} {
+    return NEWLINE;
+};
 %%
 
 /*********** C CODE (YOU DO NOT HAVE TO MODIFY IT) ******************/
@@ -453,59 +455,4 @@ void print_token_with_number(char *token, int number) {
     printf("TOKEN: %s | Number: \"%d\"\n", token, number);
 }
 
-int yywrap(void) {
-    return 1;
-}
-
-int main(int argc, char* argv[]) {
-#if YYDEBUG
-    extern int yydebug;
-    yydebug = 1;
-#endif
-    char* input = NULL;
-    char *original_input = NULL;
-    if (argc != 2) {
-        fprintf(stderr, "Please use program as: ./compo FILE.md");
-        return -1;
-    }
-
-    strbuf = malloc(sizeof(char) * STRBUFCAP);
-    FILE* f = fopen(argv[1], "r");
-    if (!f) {
-        fprintf(stderr, "Cannot open file");
-        return -1;
-    }
-    fseek(f, 0, SEEK_END);
-    int length = ftell(f);
-    rewind(f);
-    input = malloc(sizeof(char) * (length + 1));
-    original_input = input;
-    if (input == NULL) {
-        fprintf(stderr, "Cannot allocate enough memory for file");
-        return -2;
-    }
-    fread(input, sizeof(char), length, f);
-    fclose(f);
-    *(input + length) = 0;
-    unsigned int i = 0;
-    while (i < length && isspace(*input)) {
-        input++;
-        i++;
-    }
-    unsigned int j = length - i - 1;
-    while (j > i && isspace(*(input + j))) *(input + j--) = 0;
-    yy_scan_string(input);
-
-    int ret = yylex();
-
-    if (original_input != NULL) {
-        free(original_input);
-    }
-    yylex_destroy();
-    if (strbuf != NULL) {
-        free(strbuf);
-    }
-
-    return ret;
-}
 /*********** END OF C CODE ******************/

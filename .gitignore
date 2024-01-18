@@ -1,1 +1,4 @@
 code/build
+code/src/*.tab.*
+code/src/*.yy.*
+code/out
