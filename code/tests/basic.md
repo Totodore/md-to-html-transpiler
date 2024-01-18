@@ -70,21 +70,21 @@ term
 ~~The world is flat.~~
 
 ```xsvg:0,0,100,100
-line 0,0 10,0 red
+line 0,2 10,2 red
 
-line 10,0 10,10 green
+line 10,1 10,10 green
 
-polyline 20,0 25,0 25,5 20,5 blue
-polyline 30,0 35,0 35,5 30,5 30,10 35,10 35,15 30,15 red
+polyline 20,10 25,0 25,5 20,5 blue
+polyline 30,10 35,0 35,5 30,5 30,10 35,10 35,15 30,15 red
 
-polygon 40,0 45,0 45,5 40,5 blue red
+polygon 40,10 45,0 45,5 40,5 blue red
 
-circle 50,5 5 blue red
+circle 50,15 5 blue red
 
-ellipse 60,5 5 10 blue red
+ellipse 62,16 5 10 blue red
 
 rect 70,0 10 10 blue red
 
-text 0,50 "My Super text" middle red
+text 50,50 "My Super text" middle red
 
 ```
