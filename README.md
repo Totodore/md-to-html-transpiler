@@ -1,5 +1,5 @@
 # Markdown to HTML transpiler
-### Final project for the engineering course "formal approach, languages and compilation".
+### Final project for the engineering course "formal approach, languages and compilation" at ISEP.
 
 Transpiles any document from markdown to HTML with the following features: 
 * Headings,
