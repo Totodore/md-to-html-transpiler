@@ -13,3 +13,8 @@ Transpiles any document from markdown to HTML with the following features:
 Built with:
 * [Flex](https://github.com/westes/flex) (lexical analyzer)
 * [GNU Bison](https://github.com/akimd/bison) (Parser)
+
+Authors:
+* @aveklan
+* @totodore
+* @monica-ayala
