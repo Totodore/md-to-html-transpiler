@@ -15,6 +15,6 @@ Built with:
 * [GNU Bison](https://github.com/akimd/bison) (Parser)
 
 Authors:
-* @aveklan
-* @totodore
-* @monica-ayala
+* [@aveklan](https://github.com/aveklan)
+* [@totodore](https://github.com/totodore)
+* [@monica-ayala](https://github.com/monica-ayala)
